@@ -19,4 +19,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get language => 'Language';
+
+  @override
+  String get homeLabel => 'Home';
+
+  @override
+  String get helpLabel => 'Help';
+
+  @override
+  String get aboutLabel => 'About';
+
+  @override
+  String get settingsLabel => 'Settings';
+
+  @override
+  String get resetTitle => 'Restore Defaults';
+
+  @override
+  String get resetWarning => 'This will reset all your preferences.';
+
+  @override
+  String get cancel => 'cancel';
+
+  @override
+  String get confirm => 'confirm';
 }

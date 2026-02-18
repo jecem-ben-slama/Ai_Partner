@@ -2,5 +2,14 @@
   "appTitle": "AI Assistant",
   "settings": "Settings",
   "darkMode": "Dark Mode",
-  "language": "Language"
+  "language": "Language",
+  "homeLabel": "Home",
+  "helpLabel": "Help",
+  "aboutLabel": "About",
+  "settingsLabel": "Settings",
+  "resetTitle": "Restore Defaults",
+  "resetWarning": "This will reset all your preferences.",
+  "cancel" : "cancel",
+  "confirm":"confirm"
+
 }

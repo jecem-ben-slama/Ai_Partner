@@ -19,4 +19,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get language => 'Langue';
+
+  @override
+  String get homeLabel => 'Accueil';
+
+  @override
+  String get helpLabel => 'Aide';
+
+  @override
+  String get aboutLabel => 'À Propos';
+
+  @override
+  String get settingsLabel => 'Paramètres';
+
+  @override
+  String get resetTitle => 'Réinitialiser';
+
+  @override
+  String get resetWarning => 'Cela réinitialisera toutes vos préférences.';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get confirm => 'Confirmer';
 }

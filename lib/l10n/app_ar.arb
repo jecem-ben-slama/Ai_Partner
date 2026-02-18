@@ -2,5 +2,14 @@
   "appTitle": "مساعد الذكاء الاصطناعي",
   "settings": "الإعدادات",
   "darkMode": "الوضع الليلي",
-  "language": "اللغة"
+  "language": "اللغة",
+  "homeLabel": "الرئيسية",
+  "helpLabel": "مساعدة",
+  "aboutLabel": "حول",
+  "settingsLabel": "الإعدادات",
+  "resetTitle": "استعادة الإعدادات ", 
+  "resetWarning": "سيؤدي هذا إلى إعادة ضبط جميع تفضيلاتك.",
+  "cancel": "إلغاء",
+  "confirm": "تأكيد"
+
 }

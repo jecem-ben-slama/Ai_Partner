@@ -19,4 +19,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get language => 'اللغة';
+
+  @override
+  String get homeLabel => 'الرئيسية';
+
+  @override
+  String get helpLabel => 'مساعدة';
+
+  @override
+  String get aboutLabel => 'حول';
+
+  @override
+  String get settingsLabel => 'الإعدادات';
+
+  @override
+  String get resetTitle => 'استعادة الإعدادات ';
+
+  @override
+  String get resetWarning => 'سيؤدي هذا إلى إعادة ضبط جميع تفضيلاتك.';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get confirm => 'تأكيد';
 }

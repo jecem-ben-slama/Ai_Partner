@@ -39,6 +39,9 @@ dependencies:
   flutter_bloc: ^9.1.1
   rxdart: ^0.28.0
   equatable: ^2.0.8
+  introduction_screen: ^4.0.0
+  shared_preferences: ^2.5.4
+  floating_navbar: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -64,9 +67,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

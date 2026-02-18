@@ -2,5 +2,14 @@
   "appTitle": "Assistant IA",
   "settings": "Paramètres",
   "darkMode": "Mode Sombre",
-  "language": "Langue"
+  "language": "Langue",
+  "homeLabel": "Accueil",
+  "helpLabel": "Aide",
+  "aboutLabel": "À Propos",
+  "settingsLabel": "Paramètres",
+  "resetTitle": "Réinitialiser", 
+  "resetWarning": "Cela réinitialisera toutes vos préférences.",
+  "cancel" : "Annuler",
+  "confirm":"Confirmer"
+
 }

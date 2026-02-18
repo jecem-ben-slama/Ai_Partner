@@ -120,6 +120,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get language;
+
+  /// No description provided for @homeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homeLabel;
+
+  /// No description provided for @helpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get helpLabel;
+
+  /// No description provided for @aboutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutLabel;
+
+  /// No description provided for @settingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsLabel;
+
+  /// No description provided for @resetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Defaults'**
+  String get resetTitle;
+
+  /// No description provided for @resetWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will reset all your preferences.'**
+  String get resetWarning;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'cancel'**
+  String get cancel;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'confirm'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
