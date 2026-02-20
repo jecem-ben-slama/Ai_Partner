@@ -1,4 +1,5 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/presentation/screens/home_screen.dart';
 import 'package:ai_partner/presentation/screens/settings_screen.dart';
 import 'package:floating_navbar/floating_navbar.dart';
 import 'package:floating_navbar/floating_navbar_item.dart';
@@ -14,7 +15,7 @@ class NavbarScreen extends StatefulWidget {
 class _NavbarScreenState extends State<NavbarScreen> {
   int index = 0;
   final List<Widget> screens = [
-    const Placeholder(),
+    const HomeScreen(),
     const Placeholder(),
     const SettingsScreen(),
   ];

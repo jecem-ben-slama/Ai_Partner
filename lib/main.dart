@@ -1,14 +1,16 @@
 import 'package:ai_partner/core/theme/app_colors.dart';
+import 'package:ai_partner/logic/ml/text_recognaizer_service.dart';
+import 'package:ai_partner/logic/text/text_cubit.dart';
 import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Localization imports
+//* Localization imports
 import 'package:ai_partner/l10n/app_localizations.dart';
 
-// Logic & UI imports
+//* Logic & UI imports
 import 'logic/settings/settings_cubit.dart';
 import 'logic/settings/settings_state.dart';
 
@@ -30,9 +32,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 3. Pass the pre-loaded prefs directly to your Cubit
-    return BlocProvider(
-      create: (context) => SettingsCubit(prefs),
-      child: const AppView(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => SettingsCubit(prefs)),
+        BlocProvider(create: (context) => TextCubit(TextRecognizerService())),
+      ],
+      child: SafeArea(child: const AppView()),
     );
   }
 }
