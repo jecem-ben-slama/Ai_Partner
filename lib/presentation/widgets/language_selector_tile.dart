@@ -2,7 +2,6 @@ import 'package:ai_partner/data/models/language_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/settings/settings_cubit.dart';
-import '../../core/theme/app_colors.dart';
 
 class LanguageSelectorTile extends StatelessWidget {
   final String title;
@@ -19,16 +18,10 @@ class LanguageSelectorTile extends StatelessWidget {
     return ListTile(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       leading: const Icon(Icons.language_outlined),
-      tileColor: Theme.of(context).brightness == Brightness.light
-          ? AppColors.surfaceLight
-          : AppColors.surfaceDark,
+      tileColor: Theme.of(context).colorScheme.surface,
       title: Text(
         title,
-        style: TextStyle(
-          color: Theme.of(context).brightness == Brightness.light
-              ? AppColors.black
-              : AppColors.white,
-        ),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
       trailing: DropdownButtonHideUnderline(
         child: DropdownButton<String>(

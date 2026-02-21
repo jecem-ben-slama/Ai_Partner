@@ -30,6 +30,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutLabel => 'About';
 
   @override
+  String get bookmarkLabel => 'Saved';
+
+  @override
   String get settingsLabel => 'Settings';
 
   @override

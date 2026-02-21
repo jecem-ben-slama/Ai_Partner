@@ -30,6 +30,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutLabel => 'À Propos';
 
   @override
+  String get bookmarkLabel => 'Favoris';
+
+  @override
   String get settingsLabel => 'Paramètres';
 
   @override

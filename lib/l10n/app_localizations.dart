@@ -139,6 +139,12 @@ abstract class AppLocalizations {
   /// **'About'**
   String get aboutLabel;
 
+  /// No description provided for @bookmarkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get bookmarkLabel;
+
   /// No description provided for @settingsLabel.
   ///
   /// In en, this message translates to:

@@ -15,12 +15,8 @@ import 'logic/settings/settings_cubit.dart';
 import 'logic/settings/settings_state.dart';
 
 void main() async {
-  // 1. Ensure Flutter bindings are initialized for async code
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 2. Load SharedPreferences before the app starts
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-
   runApp(MyApp(prefs: prefs));
 }
 
@@ -31,11 +27,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 3. Pass the pre-loaded prefs directly to your Cubit
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => SettingsCubit(prefs)),
-        BlocProvider(create: (context) => TextCubit(TextRecognizerService())),
+        BlocProvider(create: (context) => TextCubit(UniversalScannerService())),
       ],
       child: SafeArea(child: const AppView()),
     );
@@ -53,20 +48,38 @@ class AppView extends StatelessWidget {
           debugShowCheckedModeBanner: false,
 
           //* Theme Management
-          themeMode: state.themeMode,
           //? Light Theme
-          theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: AppColors.backgroundLight,
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryLight,
+              onPrimary: AppColors.onPrimaryLight,
+              secondary: AppColors.secondaryLight,
+              surface: AppColors.surfaceLight,
+              onSurface: AppColors.onSurfaceLight,
+              error: AppColors.error,
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.backgroundLight,
+              elevation: 0,
+              centerTitle: true,
+            ),
+          ),
           //? Dark Theme
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
-
             scaffoldBackgroundColor: AppColors.backgroundDark,
             colorScheme: ColorScheme.dark(
-              primary: AppColors.primary,
-              secondary: AppColors.secondary,
+              primary: AppColors.primaryDark,
+              onPrimary: AppColors.onPrimaryDark,
+              secondary: AppColors.secondaryDark,
+              onSecondary: AppColors.onSecondaryDark,
               surface: AppColors.surfaceDark,
-              onSurface: Colors.white,
+              onSurface: AppColors.onSurfaceDark,
+              error: AppColors.error,
             ),
             appBarTheme: const AppBarTheme(
               backgroundColor: AppColors.backgroundDark,
@@ -74,6 +87,7 @@ class AppView extends StatelessWidget {
               centerTitle: true,
             ),
           ),
+          themeMode: state.themeMode,
 
           //* Localization Management
           locale: state.locale,

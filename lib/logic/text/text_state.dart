@@ -1,3 +1,5 @@
+import 'package:ai_partner/data/models/barcode_model.dart';
+
 abstract class TextState {}
 
 class TextInitial extends TextState {}
@@ -5,11 +7,13 @@ class TextInitial extends TextState {}
 class TextLoading extends TextState {}
 
 class TextSuccess extends TextState {
-  final String text;
-  TextSuccess(this.text);
+  final String? recognizedText;
+  final List<BarcodeModel> barcodes; // Using the model we created
+
+  TextSuccess({this.recognizedText, this.barcodes = const []});
 }
 
 class TextError extends TextState {
-  final String error;
-  TextError(this.error);
+  final String message;
+  TextError(this.message);
 }

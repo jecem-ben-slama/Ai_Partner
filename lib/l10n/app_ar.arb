@@ -7,6 +7,7 @@
   "helpLabel": "مساعدة",
   "aboutLabel": "حول",
   "settingsLabel": "الإعدادات",
+  "bookmarkLabel": "المفضلة",
   "resetTitle": "استعادة الإعدادات ", 
   "resetWarning": "سيؤدي هذا إلى إعادة ضبط جميع تفضيلاتك.",
   "cancel": "إلغاء",

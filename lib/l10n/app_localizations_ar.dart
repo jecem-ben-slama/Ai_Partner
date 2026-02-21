@@ -30,6 +30,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get aboutLabel => 'حول';
 
   @override
+  String get bookmarkLabel => 'المفضلة';
+
+  @override
   String get settingsLabel => 'الإعدادات';
 
   @override

@@ -6,6 +6,7 @@
   "homeLabel": "Accueil",
   "helpLabel": "Aide",
   "aboutLabel": "À Propos",
+  "bookmarkLabel": "Favoris",
   "settingsLabel": "Paramètres",
   "resetTitle": "Réinitialiser", 
   "resetWarning": "Cela réinitialisera toutes vos préférences.",

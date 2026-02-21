@@ -6,6 +6,7 @@
   "homeLabel": "Home",
   "helpLabel": "Help",
   "aboutLabel": "About",
+  "bookmarkLabel":"Saved",
   "settingsLabel": "Settings",
   "resetTitle": "Restore Defaults",
   "resetWarning": "This will reset all your preferences.",

@@ -26,9 +26,9 @@ class _NavbarScreenState extends State<NavbarScreen> {
       body: screens[index],
       bottomNavigationBar: FloatingNavBar(
         resizeToAvoidBottomInset: false,
-        color: Color(0xFF364156),
-        selectedIconColor: Color(0xFFCDCDCD),
-        unselectedIconColor: Color(0xFFDFF8EB),
+        color: Color(0xFF161925),
+        selectedIconColor: Color(0xFFFDFFFC),
+        unselectedIconColor: Color(0xFFFDFFFC),
         items: [
           FloatingNavBarItem(
             title: l10n.homeLabel,
@@ -36,12 +36,12 @@ class _NavbarScreenState extends State<NavbarScreen> {
             iconData: Icons.home,
           ),
           FloatingNavBarItem(
-            title: l10n.helpLabel,
+            title: l10n.bookmarkLabel,
             page: screens[1],
             iconData: Icons.bookmark,
           ),
           FloatingNavBarItem(
-            title: l10n.aboutLabel,
+            title: l10n.settingsLabel,
             page: screens[2],
             iconData: Icons.settings,
           ),
