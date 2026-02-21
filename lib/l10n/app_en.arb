@@ -10,7 +10,7 @@
   "settingsLabel": "Settings",
   "resetTitle": "Restore Defaults",
   "resetWarning": "This will reset all your preferences.",
-  "cancel" : "cancel",
-  "confirm":"confirm"
+  "cancel" : "Cancel",
+  "confirm":"Confirm"
 
 }

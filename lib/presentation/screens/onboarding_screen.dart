@@ -16,13 +16,17 @@ class OnboardingScreen extends StatelessWidget {
           image: const Center(child: Icon(Icons.psychology, size: 100)),
         ),
         PageViewModel(
+          title: "Offline Functionality",
+          body: "Works without an internet connection.",
+          image: const Center(child: Icon(Icons.wifi_off, size: 100)),
+        ),
+        PageViewModel(
           title: "Multi-language",
           body: "Support for French, English, and Arabic.",
           image: const Center(child: Icon(Icons.translate, size: 100)),
         ),
       ],
       onDone: () {
-        // Mark as completed in the Cubit
         context.read<SettingsCubit>().completeOnboarding();
       },
       showSkipButton: true,

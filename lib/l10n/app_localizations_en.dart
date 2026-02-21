@@ -42,8 +42,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetWarning => 'This will reset all your preferences.';
 
   @override
-  String get cancel => 'cancel';
+  String get cancel => 'Cancel';
 
   @override
-  String get confirm => 'confirm';
+  String get confirm => 'Confirm';
 }
