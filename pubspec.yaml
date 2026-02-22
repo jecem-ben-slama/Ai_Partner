@@ -44,8 +44,12 @@ dependencies:
   floating_navbar: ^3.0.0
   google_mlkit_text_recognition: ^0.15.1
   google_mlkit_barcode_scanning: ^0.14.2
+  google_mlkit_translation: ^0.13.1
+  google_mlkit_language_id: ^0.13.1
   url_launcher: ^6.3.2
   image_picker: ^1.2.1
+  image_cropper: ^11.0.0
+  share_plus: ^12.0.1
 
 dev_dependencies:
   flutter_test:

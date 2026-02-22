@@ -1,3 +1,4 @@
+import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/vision_scanner_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,17 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text("Text Extraction"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TranslatorScreen(),
+                  ),
+                );
+              },
+              child: const Text("Text Translation"),
             ),
           ],
         ),

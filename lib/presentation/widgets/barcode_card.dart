@@ -1,12 +1,16 @@
 import 'package:ai_partner/data/models/barcode_model.dart';
+import 'package:ai_partner/logic/storage_service/history_cubit.dart';
+import 'package:ai_partner/logic/storage_service/storage_service.dart';
+import 'package:ai_partner/presentation/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BarcodeCard extends StatelessWidget {
   final BarcodeModel barcode;
   const BarcodeCard({super.key, required this.barcode});
-Future<void> _launch(String url) async {
+  Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -46,8 +50,22 @@ Future<void> _launch(String url) async {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                ActionButton(
+                  icon: Icons.bookmark_add_outlined,
+                  label: "Save",
+                  onTap: () {
+                    // Trigger the HistoryCubit save logic
+                    context.read<HistoryCubit>().saveNewScan(
+                      null, // Since this card represents a single barcode
+                      [barcode],
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Added to History")),
+                    );
+                  },
+                ),
                 // 1. Copy Button (Always present)
-                _ActionButton(
+                ActionButton(
                   icon: Icons.copy,
                   label: "Copy",
                   onTap: () {
@@ -57,10 +75,19 @@ Future<void> _launch(String url) async {
                     );
                   },
                 ),
-
+                ActionButton(
+                  icon: Icons.save,
+                  label: "Save",
+                  onTap: () async {
+                    await StorageService().saveScan(barcode.value, [barcode]);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Scan saved to history!")),
+                    );
+                  },
+                ),
                 // 2. Conditional: Call Button
                 if (barcode.isPhone)
-                  _ActionButton(
+                  ActionButton(
                     icon: Icons.call,
                     label: "Call",
                     onTap: () => _launch("tel:${barcode.value}"),
@@ -68,7 +95,7 @@ Future<void> _launch(String url) async {
 
                 // 3. Conditional: Browser Button
                 if (barcode.isUrl)
-                  _ActionButton(
+                  ActionButton(
                     icon: Icons.open_in_browser,
                     label: "Chrome",
                     onTap: () => _launch(barcode.value),
@@ -83,34 +110,3 @@ Future<void> _launch(String url) async {
 }
 
 // Small helper for the buttons inside the expanded area
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white70, fontSize: 10),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

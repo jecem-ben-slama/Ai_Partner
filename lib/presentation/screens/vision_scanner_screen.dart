@@ -1,10 +1,11 @@
 import 'dart:io';
-import 'package:ai_partner/logic/text/vision_cubit.dart';
-import 'package:ai_partner/logic/text/vision_state.dart';
+import 'package:ai_partner/logic/vision_scanning/vision_cubit.dart';
+import 'package:ai_partner/logic/vision_scanning/vision_state.dart';
 import 'package:ai_partner/presentation/widgets/barcode_card.dart';
 import 'package:ai_partner/presentation/widgets/textresult_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class VisionScannerScreen extends StatelessWidget {
@@ -110,10 +111,13 @@ class VisionScannerScreen extends StatelessWidget {
               icon: const Icon(Icons.photo_library),
             ),
           ),
+          
         ],
       ),
     );
   }
+
+  // Inside your VisionScannerScreen class
 
   Future<void> _handlePickImage(
     BuildContext context,
@@ -121,9 +125,34 @@ class VisionScannerScreen extends StatelessWidget {
   ) async {
     final picker = ImagePicker();
     final xFile = await picker.pickImage(source: source);
+
     if (xFile != null) {
-      context.read<VisionCubit>().scanImage(File(xFile.path));
+      // NEW: Open the cropper before scanning
+      final croppedFile = await _cropImage(xFile.path, context);
+
+      if (croppedFile != null && context.mounted) {
+        context.read<VisionCubit>().scanImage(File(croppedFile.path));
+      }
     }
+  }
+
+  Future<CroppedFile?> _cropImage(String path, BuildContext context) async {
+    return await ImageCropper().cropImage(
+      sourcePath: path,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Select Zone',
+          toolbarColor: const Color(0xFF364156), // Your custom blue
+          toolbarWidgetColor: Colors.white,
+          activeControlsWidgetColor: Theme.of(
+            context,
+          ).colorScheme.primary, // Lavender
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false, // Allow free selection
+        ),
+        IOSUiSettings(title: 'Select Zone'),
+      ],
+    );
   }
 
   Widget _buildInitialState(BuildContext context) {

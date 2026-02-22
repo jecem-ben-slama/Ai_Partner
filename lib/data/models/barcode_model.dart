@@ -14,4 +14,16 @@ class BarcodeModel {
     if (type == "QR_CODE") return "QR Code";
     return type[0] + type.substring(1).toLowerCase();
   }
+
+  Map<String, dynamic> toJson() {
+    return {'value': value, 'type': type};
+  }
+
+  /// Creates a BarcodeModel from a decoded JSON Map.
+  factory BarcodeModel.fromJson(Map<String, dynamic> json) {
+    return BarcodeModel(
+      value: json['value'] ?? '',
+      type: json['type'] ?? 'TEXT',
+    );
+  }
 }

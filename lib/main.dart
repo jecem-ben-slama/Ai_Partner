@@ -1,6 +1,9 @@
 import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:ai_partner/logic/ml/universal_scanner_service.dart';
-import 'package:ai_partner/logic/text/vision_cubit.dart';
+import 'package:ai_partner/logic/storage_service/history_cubit.dart';
+import 'package:ai_partner/logic/storage_service/storage_service.dart';
+import 'package:ai_partner/logic/translation/translation_cubit.dart';
+import 'package:ai_partner/logic/vision_scanning/vision_cubit.dart';
 import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +33,13 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => SettingsCubit(prefs)),
-        BlocProvider(create: (context) => VisionCubit(UniversalScannerService())),
+        BlocProvider(
+          create: (context) => VisionCubit(UniversalScannerService()),
+        ),
+        BlocProvider(
+          create: (context) => HistoryCubit(StorageService())..loadHistory(),
+        ),
+        BlocProvider(create: (context) => TranslationCubit()),
       ],
       child: SafeArea(child: const AppView()),
     );

@@ -1,4 +1,5 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/presentation/screens/history_screen.dart';
 import 'package:ai_partner/presentation/screens/home_screen.dart';
 import 'package:ai_partner/presentation/screens/settings_screen.dart';
 import 'package:floating_navbar/floating_navbar.dart';
@@ -16,13 +17,14 @@ class _NavbarScreenState extends State<NavbarScreen> {
   int index = 0;
   final List<Widget> screens = [
     const HomeScreen(),
-    const Placeholder(),
+    const HistoryScreen(),
     const SettingsScreen(),
   ];
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      extendBody: false,
       body: screens[index],
       bottomNavigationBar: FloatingNavBar(
         resizeToAvoidBottomInset: false,

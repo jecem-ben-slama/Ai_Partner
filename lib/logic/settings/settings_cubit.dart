@@ -39,6 +39,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   void resetSettings() async {
     await prefs.clear();
+    
 
     emit(
       SettingsState(
