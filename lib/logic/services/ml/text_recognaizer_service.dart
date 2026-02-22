@@ -5,15 +5,17 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 class TextRecognizerService {
   final _recognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
-  Future<SmartResult?> scan(File file) async {
+  Future<VisionResult?> scan(File file) async {
     final inputImage = InputImage.fromFile(file);
     final recognizedText = await _recognizer.processImage(inputImage);
 
     if (recognizedText.text.trim().isEmpty) return null;
 
-    return SmartResult(
+    return VisionResult(
+      // Temporary ID, which will be finalized in the UniversalScannerService
+      id: "txt_${DateTime.now().millisecondsSinceEpoch}",
       content: recognizedText.text,
-      type: ScanDataType.text,
+      type: VisionType.text,
       label: "TEXT",
     );
   }

@@ -1,6 +1,7 @@
+
 import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../models/barcode_model.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
 import 'history_state.dart';
 
 class HistoryCubit extends Cubit<HistoryState> {
@@ -8,42 +9,39 @@ class HistoryCubit extends Cubit<HistoryState> {
 
   HistoryCubit(this._storageService) : super(HistoryInitial());
 
-  // Load all saved scans from Shared Preferences
   Future<void> loadHistory() async {
     emit(HistoryLoading());
     try {
       final scans = await _storageService.getHistory();
       emit(HistoryLoaded(scans));
     } catch (e) {
-      emit(HistoryError("Could not load memory."));
+      emit(HistoryError("Could not load history."));
     }
   }
 
-  // Save a new scan and refresh the list
-  Future<void> saveNewScan(String? text, List<BarcodeModel> barcodes) async {
+  Future<void> saveNewScan(List<VisionResult> results) async {
     try {
-      await _storageService.saveScan(text, barcodes);
-      await loadHistory(); // Refresh the state
+      final resultsJson = results.map((res) => res.toJson()).toList();
+      await _storageService.saveScan(resultsJson);
+      await loadHistory(); 
     } catch (e) {
-      emit(HistoryError("Failed to save scan."));
+      emit(HistoryError("Failed to save."));
     }
   }
 
-  // Delete a single item
   Future<void> deleteItem(String id) async {
     try {
       await _storageService.deleteScanById(id);
-      await loadHistory(); // Refresh the UI list
+      await loadHistory();
     } catch (e) {
-      emit(HistoryError("Could not delete item."));
+      emit(HistoryError("Delete failed."));
     }
   }
-
   // Clear the whole history
   Future<void> clearAll() async {
     try {
       await _storageService.deleteAll();
-      emit(HistoryLoaded(const [])); // Emit empty state directly
+      emit(HistoryLoaded(const []));
     } catch (e) {
       emit(HistoryError("Failed to clear history."));
     }

@@ -1,24 +1,30 @@
-import 'package:ai_partner/models/barcode_model.dart';
+import 'package:equatable/equatable.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
 
-abstract class VisionState {}
+abstract class VisionState extends Equatable {
+  const VisionState();
+
+  @override
+  List<Object?> get props => [];
+}
 
 class VisionInitial extends VisionState {}
 
 class VisionLoading extends VisionState {}
 
 class VisionSuccess extends VisionState {
-  // We keep them separate so the UI can prioritize showing QR actions at the top
-  final String? fullText;
-  final List<BarcodeModel> barcodes;
+  final List<VisionResult> results;
 
-  // A helper to check if we found absolutely nothing
-  bool get isEmpty =>
-      (fullText == null || fullText!.isEmpty) && barcodes.isEmpty;
+  const VisionSuccess({required this.results});
 
-  VisionSuccess({this.fullText, this.barcodes = const []});
+  @override
+  List<Object?> get props => [results];
 }
 
 class VisionError extends VisionState {
   final String message;
-  VisionError(this.message);
+  const VisionError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

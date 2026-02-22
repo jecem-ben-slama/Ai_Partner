@@ -1,4 +1,4 @@
-import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
+/* import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
 import 'package:flutter/material.dart';
@@ -96,3 +96,4 @@ class TextResultCard extends StatelessWidget {
     );
   }
 }
+ */

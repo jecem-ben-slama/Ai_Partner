@@ -1,4 +1,4 @@
-import 'package:ai_partner/models/barcode_model.dart';
+import 'package:ai_partner/models/scan_result_model.dart'; // Unified model
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
@@ -14,7 +14,6 @@ class HistoryItemCard extends StatelessWidget {
 
   const HistoryItemCard({super.key, required this.scan});
 
-  // Helper to open URLs
   Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -22,12 +21,8 @@ class HistoryItemCard extends StatelessWidget {
     }
   }
 
-  // --- The Popup Logic ---
-  void _showScanDetail(BuildContext context, Map<String, dynamic> scan) {
-    final String? text = scan['text'];
-    final List<dynamic> barcodeData = scan['barcodes'] ?? [];
-    final barcodes = barcodeData.map((b) => BarcodeModel.fromJson(b)).toList();
-
+  // --- The Detail Popup Logic ---
+  void _showScanDetail(BuildContext context, List<VisionResult> results) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -39,125 +34,122 @@ class HistoryItemCard extends StatelessWidget {
         padding: EdgeInsets.only(
           left: 20,
           right: 20,
-          top: 20,
+          top: 15,
           bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 40,
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                text != null ? "Text Scan" : "Barcode Detail",
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+            const SizedBox(height: 25),
+            Text(
+              "History Detail",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.1,
               ),
-              const SizedBox(height: 12),
-              if (text != null)
-                SelectableText(
-                  text,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              if (barcodes.isNotEmpty)
-                ...barcodes.map(
-                  (b) => Text(
-                    "${b.displayType}: ${b.value}",
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Copy
-                  ActionButton(
-                    icon: Icons.copy,
-                    label: "Copy",
-                    onTap: () {
-                      final content =
-                          text ??
-                          (barcodes.isNotEmpty ? barcodes.first.value : "");
-                      Clipboard.setData(ClipboardData(text: content));
-                      Navigator.pop(sheetContext);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Copied to clipboard")),
-                      );
-                    },
-                  ),
-                  // Translate
-                  //only show translate if it's a text scan or a barcode with non-URL content
-                  if (text != null ||
-                      (barcodes.isNotEmpty && !barcodes.first.isUrl))
-                    ActionButton(
-                      icon: Icons.g_translate_rounded,
-                      label: "Translate",
-                      onTap: () {
-                        // 1. Close the bottom sheet first
-                        Navigator.pop(sheetContext);
+            ),
+            const SizedBox(height: 15),
 
-                        // 2. Navigate to the Translator Screen with the text
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TranslatorScreen(
-                              initialText: text ?? barcodes.first.value,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  // Share
-                  ActionButton(
-                    icon: Icons.share_outlined,
-                    label: "Share",
-                    onTap: () {
-                      final content =
-                          text ??
-                          (barcodes.isNotEmpty ? barcodes.first.value : "");
-                      if (content.isNotEmpty) {
-                        // Use the static helper - it's the safest way to avoid the 'ShareParams' error
-                        Share.share(content);
-                      }
-                      Navigator.pop(sheetContext);
-                    },
+            // Render all results found in this scan session
+            ...results.map(
+              (res) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    res.label ?? "Result",
+                    style: const TextStyle(color: Colors.white38, fontSize: 12),
                   ),
-                  // Open Link
-                  if (barcodes.isNotEmpty && barcodes.first.isUrl)
-                    ActionButton(
-                      icon: Icons.open_in_browser,
-                      label: "Open",
-                      onTap: () {
-                        _launch(barcodes.first.value);
-                        Navigator.pop(sheetContext);
-                      },
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    res.content,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      height: 1.5,
                     ),
-                  // Delete
-                  ActionButton(
-                    icon: Icons.delete_outline,
-                    label: "Remove",
-                    onTap: () {
-                      Navigator.pop(sheetContext); // Close sheet first
-                      _showDeleteConfirm(context); // Then show confirm dialog
-                    },
                   ),
+                  _buildActionRow(context, sheetContext, res),
+                  const Divider(color: Colors.white10, height: 30),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionRow(
+    BuildContext context,
+    BuildContext sheetContext,
+    VisionResult res,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          ActionButton(
+            icon: Icons.copy,
+            label: "Copy",
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: res.content));
+              Navigator.pop(sheetContext);
+              _showFloatingSnack(context, "Copied to clipboard");
+            },
+          ),
+          if (res.type == VisionType.text || res.type == VisionType.barcode)
+            ActionButton(
+              icon: Icons.g_translate_rounded,
+              label: "Translate",
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        TranslatorScreen(initialText: res.content),
+                  ),
+                );
+              },
+            ),
+          if (res.type == VisionType.phone)
+            ActionButton(
+              icon: Icons.call,
+              label: "Call",
+              onTap: () => _launch("tel:${res.content}"),
+            ),
+          if (res.type == VisionType.url)
+            ActionButton(
+              icon: Icons.open_in_browser,
+              label: "Open",
+              onTap: () => _launch(res.content),
+            ),
+          ActionButton(
+            icon: Icons.share_outlined,
+            label: "Share",
+            onTap: () => Share.share(res.content),
+          ),
+          ActionButton(
+            icon: Icons.delete_outline,
+            label: "Remove",
+            onTap: () {
+              Navigator.pop(sheetContext);
+              _showDeleteConfirm(context);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -165,38 +157,79 @@ class HistoryItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DateTime date = DateTime.parse(scan['timestamp']);
-    final String? text = scan['text'];
-    final List<dynamic> barcodeData = scan['barcodes'] ?? [];
-    final barcodes = barcodeData.map((b) => BarcodeModel.fromJson(b)).toList();
+
+    // Parse the new results structure
+    final List<dynamic> rawResults = scan['results'] ?? [];
+    final List<VisionResult> results = rawResults
+        .map((r) => VisionResult.fromJson(r))
+        .toList();
+
+    // Default preview text
+    final String previewText = results.isNotEmpty
+        ? results.first.content
+        : "Empty Scan";
+    final IconData previewIcon =
+        results.isNotEmpty && results.first.type == VisionType.text
+        ? Icons.text_snippet_outlined
+        : Icons.qr_code_2;
 
     return Card(
       color: const Color(0xFF364156),
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _showScanDetail(context, scan),
+        onTap: () => _showScanDetail(context, results),
         child: ListTile(
-          leading: Icon(
-            text != null ? Icons.text_snippet : Icons.qr_code,
-            color: Theme.of(context).colorScheme.primary,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              previewIcon,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           title: Text(
-            text ??
-                (barcodes.isNotEmpty ? barcodes.first.value : "Scan Result"),
+            previewText,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          subtitle: Text(
-            DateFormat('MMM dd • HH:mm').format(date),
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              DateFormat('MMM dd • HH:mm').format(date),
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
+            ),
           ),
           trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.white24,
-            size: 18,
+            Icons.arrow_forward_ios,
+            color: Colors.white12,
+            size: 14,
           ),
         ),
+      ),
+    );
+  }
+
+  void _showFloatingSnack(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(20),
       ),
     );
   }
@@ -211,7 +244,7 @@ class HistoryItemCard extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         content: const Text(
-          "Are you sure you want to delete this specific scan?",
+          "Delete this scan from history?",
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -221,20 +254,13 @@ class HistoryItemCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              final String? id = scan['id'];
-              if (id != null) {
-                context.read<HistoryCubit>().deleteItem(id);
-                Navigator.pop(dialogContext);
-              } else {
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Cannot delete old items without IDs."),
-                  ),
-                );
-              }
+              context.read<HistoryCubit>().deleteItem(scan['id']);
+              Navigator.pop(dialogContext);
             },
-            child: const Text("Remove", style: TextStyle(color: Colors.red)),
+            child: const Text(
+              "Remove",
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),

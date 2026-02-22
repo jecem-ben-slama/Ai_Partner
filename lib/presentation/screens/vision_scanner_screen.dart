@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_state.dart';
-import 'package:ai_partner/presentation/widgets/barcode_card.dart';
-import 'package:ai_partner/presentation/widgets/textresult_card.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
+import 'package:ai_partner/presentation/widgets/vision_result_card.dart'; // Updated widget
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -30,7 +30,7 @@ class VisionScannerScreen extends StatelessWidget {
           }
 
           if (state is VisionSuccess) {
-            return _buildResultsList(context, state);
+            return _buildResultsList(context, state.results);
           }
 
           if (state is VisionError) {
@@ -40,34 +40,37 @@ class VisionScannerScreen extends StatelessWidget {
           return _buildInitialState(context);
         },
       ),
-      // Floating Action Buttons for Camera/Gallery
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _buildActionButtons(context),
     );
   }
 
-  Widget _buildResultsList(BuildContext context, VisionSuccess state) {
-    if (state.isEmpty) {
+  Widget _buildResultsList(BuildContext context, List<VisionResult> results) {
+    if (results.isEmpty) {
       return const Center(child: Text("No data found in image."));
     }
+
+    // Separate results for cleaner sectioning
+    final barcodes = results.where((r) => r.type != VisionType.text).toList();
+    final textResults = results
+        .where((r) => r.type == VisionType.text)
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // 1. Barcode/QR Section
-        if (state.barcodes.isNotEmpty) ...[
-          _buildHeader("Actions Found"),
-          ...state.barcodes.map((b) => BarcodeCard(barcode: b)),
+        if (barcodes.isNotEmpty) ...[
+          _buildHeader("Detected Codes"),
+          ...barcodes.map((res) => VisionResultCard(result: res)),
           const SizedBox(height: 24),
         ],
 
-        // 2. OCR Text Section
-        if (state.fullText != null) ...[
-          _buildHeader("Extracted Text"),
-          TextResultCard(text: state.fullText!),
+        if (textResults.isNotEmpty) ...[
+          _buildHeader("Recognized Text"),
+          ...textResults.map((res) => VisionResultCard(result: res)),
         ],
 
-        const SizedBox(height: 100), // Padding for FAB
+        const SizedBox(height: 100), // Padding for FABs
       ],
     );
   }
@@ -86,6 +89,8 @@ class VisionScannerScreen extends StatelessWidget {
       ),
     );
   }
+
+  // --- Image Picking & Cropping Logic (Same as before) ---
 
   Widget _buildActionButtons(BuildContext context) {
     return Padding(
@@ -111,13 +116,10 @@ class VisionScannerScreen extends StatelessWidget {
               icon: const Icon(Icons.photo_library),
             ),
           ),
-          
         ],
       ),
     );
   }
-
-  // Inside your VisionScannerScreen class
 
   Future<void> _handlePickImage(
     BuildContext context,
@@ -127,9 +129,7 @@ class VisionScannerScreen extends StatelessWidget {
     final xFile = await picker.pickImage(source: source);
 
     if (xFile != null) {
-      // NEW: Open the cropper before scanning
       final croppedFile = await _cropImage(xFile.path, context);
-
       if (croppedFile != null && context.mounted) {
         context.read<VisionCubit>().scanImage(File(croppedFile.path));
       }
@@ -142,13 +142,11 @@ class VisionScannerScreen extends StatelessWidget {
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Select Zone',
-          toolbarColor: const Color(0xFF364156), // Your custom blue
+          toolbarColor: const Color(0xFF364156),
           toolbarWidgetColor: Colors.white,
-          activeControlsWidgetColor: Theme.of(
-            context,
-          ).colorScheme.primary, // Lavender
+          activeControlsWidgetColor: Theme.of(context).colorScheme.primary,
           initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false, // Allow free selection
+          lockAspectRatio: false,
         ),
         IOSUiSettings(title: 'Select Zone'),
       ],
@@ -174,7 +172,14 @@ class VisionScannerScreen extends StatelessWidget {
 
   Widget _buildErrorState(String message) {
     return Center(
-      child: Text("Error: $message", style: const TextStyle(color: Colors.red)),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.redAccent),
+        ),
+      ),
     );
   }
 }

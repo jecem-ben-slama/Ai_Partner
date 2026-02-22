@@ -7,7 +7,17 @@ class BarcodeModel {
   /// Helper to determine which icon to show in the UI
   bool get isUrl => type.contains('URL') || value.startsWith('http');
   bool get isWifi => type.contains('WIFI');
-  bool get isPhone => type.contains('PHONE');
+ // Inside BarcodeModel class
+  bool get isPhone {
+    // Removes common formatting like +, -, spaces, or parentheses
+    final cleanValue = value.replaceAll(RegExp(r'[\s\-\(\)\+]'), '');
+
+    // Checks if it consists only of digits and is between 3 to 15 digits long
+    final isNumeric = RegExp(r'^\d+$').hasMatch(cleanValue);
+
+    // ML Kit sometimes labels it as PHONE, or we can manually check numeric content
+    return type == "PHONE" || (isNumeric && cleanValue.length >= 3);
+  }
 
   /// Formats the label for a cleaner UI look (e.g., "WIFI" -> "WiFi")
   String get displayType {
