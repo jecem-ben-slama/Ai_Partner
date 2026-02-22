@@ -1,4 +1,4 @@
-import 'package:ai_partner/presentation/screens/text_recognition_screen.dart';
+import 'package:ai_partner/presentation/screens/vision_scanner_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -20,7 +20,9 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TextRecognitionScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const VisionScannerScreen(),
+                  ),
                 );
               },
               child: const Text("Text Extraction"),

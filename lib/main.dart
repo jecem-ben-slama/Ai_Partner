@@ -1,6 +1,6 @@
 import 'package:ai_partner/core/theme/app_colors.dart';
-import 'package:ai_partner/logic/ml/text_recognaizer_service.dart';
-import 'package:ai_partner/logic/text/text_cubit.dart';
+import 'package:ai_partner/logic/ml/universal_scanner_service.dart';
+import 'package:ai_partner/logic/text/vision_cubit.dart';
 import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => SettingsCubit(prefs)),
-        BlocProvider(create: (context) => TextCubit(UniversalScannerService())),
+        BlocProvider(create: (context) => VisionCubit(UniversalScannerService())),
       ],
       child: SafeArea(child: const AppView()),
     );

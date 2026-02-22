@@ -1,39 +1,17 @@
-import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-
-enum ScannedType { url, wifi, text, product, email }
-
 class BarcodeModel {
-  final String displayValue;
-  final ScannedType type;
-  final String? rawData;
+  final String value;
+  final String type; // e.g., URL, WIFI, PHONE, TEXT
 
-  BarcodeModel({required this.displayValue, required this.type, this.rawData});
+  BarcodeModel({required this.value, required this.type});
 
-  // Factory to convert ML Kit result to our clean model
-  factory BarcodeModel.fromMlKit(Barcode barcode) {
-    ScannedType type;
+  /// Helper to determine which icon to show in the UI
+  bool get isUrl => type.contains('URL') || value.startsWith('http');
+  bool get isWifi => type.contains('WIFI');
+  bool get isPhone => type.contains('PHONE');
 
-    switch (barcode.type) {
-      case BarcodeType.url:
-        type = ScannedType.url;
-        break;
-      case BarcodeType.wifi:
-        type = ScannedType.wifi;
-        break;
-      case BarcodeType.product:
-        type = ScannedType.product;
-        break;
-      case BarcodeType.email:
-        type = ScannedType.email;
-        break;
-      default:
-        type = ScannedType.text;
-    }
-
-    return BarcodeModel(
-      displayValue: barcode.displayValue ?? "Unknown",
-      type: type,
-      rawData: barcode.rawValue,
-    );
+  /// Formats the label for a cleaner UI look (e.g., "WIFI" -> "WiFi")
+  String get displayType {
+    if (type == "QR_CODE") return "QR Code";
+    return type[0] + type.substring(1).toLowerCase();
   }
 }
