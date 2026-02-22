@@ -1,6 +1,6 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
-import 'package:ai_partner/logic/settings/settings_cubit.dart';
-import 'package:ai_partner/logic/settings/settings_state.dart';
+import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
+import 'package:ai_partner/logic/cubit/settings/settings_state.dart';
 import 'package:ai_partner/presentation/widgets/language_selector_tile.dart';
 import 'package:ai_partner/presentation/widgets/settings_switch_widget.dart';
 import 'package:flutter/material.dart';

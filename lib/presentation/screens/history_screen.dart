@@ -1,5 +1,5 @@
-import 'package:ai_partner/logic/storage_service/history_cubit.dart';
-import 'package:ai_partner/logic/storage_service/history_state.dart';
+import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
+import 'package:ai_partner/logic/cubit/storage/history_state.dart';
 import 'package:ai_partner/presentation/widgets/history_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,4 +1,4 @@
-import 'package:ai_partner/logic/settings/settings_cubit.dart';
+import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:introduction_screen/introduction_screen.dart';

@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:ai_partner/logic/vision_scanning/vision_cubit.dart';
-import 'package:ai_partner/logic/vision_scanning/vision_state.dart';
+import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
+import 'package:ai_partner/logic/cubit/scanning/vision_state.dart';
 import 'package:ai_partner/presentation/widgets/barcode_card.dart';
 import 'package:ai_partner/presentation/widgets/textresult_card.dart';
 import 'package:flutter/material.dart';

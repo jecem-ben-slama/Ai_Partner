@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/models/barcode_model.dart';
+import '../../models/barcode_model.dart';
 
 class StorageService {
   static const String _historyKey = 'scan_history';

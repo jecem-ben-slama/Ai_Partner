@@ -1,21 +1,23 @@
-import 'package:ai_partner/core/theme/app_colors.dart';
-import 'package:ai_partner/logic/ml/universal_scanner_service.dart';
-import 'package:ai_partner/logic/storage_service/history_cubit.dart';
-import 'package:ai_partner/logic/storage_service/storage_service.dart';
-import 'package:ai_partner/logic/translation/translation_cubit.dart';
-import 'package:ai_partner/logic/vision_scanning/vision_cubit.dart';
-import 'package:ai_partner/presentation/screens/navbar_screen.dart';
-import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
+//* Package imports
+import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 //* Localization imports
 import 'package:ai_partner/l10n/app_localizations.dart';
-
-//* Logic & UI imports
-import 'logic/settings/settings_cubit.dart';
-import 'logic/settings/settings_state.dart';
+//* Service imports
+import 'package:ai_partner/logic/services/universal_scanner_service.dart';
+import 'package:ai_partner/logic/services/storage_service.dart';
+//* Themes & UI imports
+import 'package:ai_partner/core/theme/app_colors.dart';
+import 'package:ai_partner/presentation/screens/navbar_screen.dart';
+import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
+//* Cubit imports
+import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
+import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
+import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
+import 'logic/cubit/settings/settings_cubit.dart';
+import 'logic/cubit/settings/settings_state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,14 +27,16 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
+  final SettingsService settingsService;
 
-  const MyApp({super.key, required this.prefs});
+  MyApp({super.key, required this.prefs})
+    : settingsService = SettingsService(prefs);
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => SettingsCubit(prefs)),
+        BlocProvider(create: (context) => SettingsCubit(settingsService)),
         BlocProvider(
           create: (context) => VisionCubit(UniversalScannerService()),
         ),
@@ -102,7 +106,7 @@ class AppView extends StatelessWidget {
           locale: state.locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          //* Index
+          //* Index Page
           home: state.showOnboarding
               ? const OnboardingScreen()
               : const NavbarScreen(),

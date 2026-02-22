@@ -1,6 +1,6 @@
-import 'package:ai_partner/logic/storage_service/storage_service.dart';
+import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/barcode_model.dart';
+import '../../../models/barcode_model.dart';
 import 'history_state.dart';
 
 class HistoryCubit extends Cubit<HistoryState> {

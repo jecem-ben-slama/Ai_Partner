@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:ai_partner/data/models/scan_result_model.dart';
-import 'package:ai_partner/logic/ml/barcode_scanner_service.dart';
-import 'package:ai_partner/logic/ml/text_recognaizer_service.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
+import 'package:ai_partner/logic/services/ml/barcode_scanner_service.dart';
+import 'package:ai_partner/logic/services/ml/text_recognaizer_service.dart';
 
 class UniversalScannerService {
   final _barcodeService = BarcodeScannerService();

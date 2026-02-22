@@ -1,4 +1,4 @@
-import 'package:ai_partner/logic/translation/translation_service.dart';
+import 'package:ai_partner/logic/services/ml/translation_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'translation_state.dart';

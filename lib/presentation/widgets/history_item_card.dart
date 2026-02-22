@@ -1,5 +1,5 @@
-import 'package:ai_partner/data/models/barcode_model.dart';
-import 'package:ai_partner/logic/storage_service/history_cubit.dart';
+import 'package:ai_partner/models/barcode_model.dart';
+import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
 import 'package:flutter/material.dart';

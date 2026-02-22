@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:ai_partner/data/models/scan_result_model.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/barcode_model.dart';
-import '../ml/universal_scanner_service.dart';
+import '../../../models/barcode_model.dart';
+import '../../services/universal_scanner_service.dart';
 import 'vision_state.dart';
 
 class VisionCubit extends Cubit<VisionState> {

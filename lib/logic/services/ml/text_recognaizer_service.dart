@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:ai_partner/data/models/scan_result_model.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class TextRecognizerService {

@@ -1,4 +1,4 @@
-import 'package:ai_partner/data/models/barcode_model.dart';
+import 'package:ai_partner/models/barcode_model.dart';
 
 abstract class VisionState {}
 

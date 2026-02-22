@@ -1,7 +1,7 @@
-import 'package:ai_partner/data/models/language_model.dart';
+import 'package:ai_partner/models/language_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../logic/settings/settings_cubit.dart';
+import '../../logic/cubit/settings/settings_cubit.dart';
 
 class LanguageSelectorTile extends StatelessWidget {
   final String title;
