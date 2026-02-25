@@ -11,7 +11,7 @@ class AppColors {
   static const Color onSurfaceDark = Color(0xFFECEFF4);
   //* Light Theme Colors
   static const Color backgroundLight = Color(0xFFF5F7FA);
-  static const Color primaryLight = Color(0xFF235789);
+  static const Color primaryLight = Color.fromARGB(255, 34, 83, 128);
   static const Color onPrimaryLight = Color(0xFFFFFFFF);
   static const Color secondaryLight = Color(0xFF03DAC6);
   static const Color onSecondaryLight = Color(0xFF000000);

@@ -39,7 +39,25 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       _targetLang = temp;
     });
   }
-
+String _getLocalizedLanguageName(
+    BuildContext context,
+    TranslateLanguage lang,
+  ) {
+    // Use a switch to map ML Kit Enums to your translations
+    switch (lang) {
+      case TranslateLanguage.french:
+        return "Français"; // Or use AppLocalizations.of(context)!.french
+      case TranslateLanguage.arabic:
+        return "العربية"; // Or use AppLocalizations.of(context)!.arabic
+      case TranslateLanguage.english:
+        return "English";
+      case TranslateLanguage.spanish:
+        return "Español";
+      default:
+        // Fallback to the Enum name if not manually mapped
+        return lang.name.toUpperCase();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,11 +143,11 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         fontSize: 14,
       ),
       items: TranslateLanguage.values.map((lang) {
-        return DropdownMenuItem(
-          value: lang,
-          child: Text(lang.name.toUpperCase()),
-        );
-      }).toList(),
+  return DropdownMenuItem(
+    value: lang,
+    child: Text(_getLocalizedLanguageName(context, lang)), // Localized call
+  );
+}).toList(),
       onChanged: onChanged,
     );
   }

@@ -13,11 +13,27 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             const Text(
-              "Welcome to AI Partner!\n\nUse the bottom navigation to explore features.",
+              "Welcome to AI Partner!\nUse the bottom navigation to explore features.",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18),
             ),
+            SizedBox(height: MediaQuery.sizeOf(context).width * 0.2),
+
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                fixedSize: Size(
+                  MediaQuery.sizeOf(context).width * 0.8,
+                  MediaQuery.sizeOf(context).height * 0.1,
+                ),
+
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadiusGeometry.all(Radius.circular(24)),
+                ),
+              ),
+
               onPressed: () {
                 Navigator.push(
                   context,
@@ -26,9 +42,27 @@ class HomeScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text("Text Extraction"),
+              child: Text(
+                "Text Extraction",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
             ),
+            SizedBox(height: MediaQuery.sizeOf(context).width * 0.2),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                fixedSize: Size(
+                  MediaQuery.sizeOf(context).width * 0.8,
+                  MediaQuery.sizeOf(context).height * 0.1,
+                ),
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadiusGeometry.all(Radius.circular(24)),
+                ),
+              ),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -37,7 +71,12 @@ class HomeScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text("Text Translation"),
+              child: Text(
+                "Text Translation",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
             ),
           ],
         ),
