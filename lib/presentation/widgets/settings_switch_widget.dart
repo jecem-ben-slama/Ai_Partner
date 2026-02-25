@@ -24,6 +24,9 @@ class _SettingsSwitchWidgetState extends State<SettingsSwitchWidget> {
     return ListTile(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       leading: Icon(widget.icon),
+      iconColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : Theme.of(context).colorScheme.primary,
       tileColor: Theme.of(context).colorScheme.surface,
       title: Text(
         widget.title,

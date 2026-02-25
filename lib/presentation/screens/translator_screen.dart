@@ -1,3 +1,5 @@
+import 'package:ai_partner/core/theme/app_colors.dart';
+import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_state.dart';
 import 'package:flutter/material.dart';
@@ -14,22 +16,22 @@ class TranslatorScreen extends StatefulWidget {
 }
 
 class _TranslatorScreenState extends State<TranslatorScreen> {
-  
-  late TextEditingController _textController ;
+  late TextEditingController _textController;
   TranslateLanguage _sourceLang = TranslateLanguage.english;
-  TranslateLanguage _targetLang = TranslateLanguage.spanish;
-@override
+  TranslateLanguage _targetLang = TranslateLanguage.french;
+
+  @override
   void initState() {
     super.initState();
     _textController = TextEditingController(text: widget.initialText ?? "");
   }
+
   @override
   void dispose() {
     _textController.dispose();
     super.dispose();
   }
 
-  // Helper to swap languages quickly
   void _swapLanguages() {
     setState(() {
       final temp = _sourceLang;
@@ -41,15 +43,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF161925),
-      appBar: AppBar(
-        title: const Text(
-          "AI Translator",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -78,8 +72,11 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF364156),
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.white70
+            : AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.surfaceDark, width: 1.5),
       ),
       child: Row(
         children: [
@@ -90,7 +87,12 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.swap_horiz, color: Colors.white70),
+            icon: Icon(
+              Icons.swap_horiz,
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.black
+                  : Colors.white,
+            ),
             onPressed: _swapLanguages,
           ),
           Expanded(
@@ -112,8 +114,16 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       value: current,
       isExpanded: true,
       underline: const SizedBox(),
-      dropdownColor: const Color(0xFF364156),
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+
+      dropdownColor: Theme.of(context).brightness == Brightness.light
+          ? Colors.white
+          : AppColors.surfaceDark,
+      style: TextStyle(
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.black
+            : Colors.white,
+        fontSize: 14,
+      ),
       items: TranslateLanguage.values.map((lang) {
         return DropdownMenuItem(
           value: lang,
@@ -127,17 +137,24 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   Widget _buildInputArea() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF364156),
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.white70
+            : AppColors.surfaceDark,
         borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.surfaceDark, width: 1.5),
       ),
       padding: const EdgeInsets.all(16),
       child: TextField(
         controller: _textController,
         maxLines: 6,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
-        decoration: const InputDecoration(
-          hintText: "Type or paste text here...",
-          hintStyle: TextStyle(color: Colors.white24),
+        style: TextStyle(color: Colors.black, fontSize: 16),
+        decoration: InputDecoration(
+          hintText: AppLocalizations.of(context)!.translationHint,
+          hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.black
+                : Colors.white,
+          ),
           border: InputBorder.none,
         ),
       ),
@@ -162,19 +179,18 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                     );
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(context).brightness == Brightness.light
+                  ? AppColors.primaryLight
+                  : AppColors.surfaceDark,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: isLoading
                 ? const CircularProgressIndicator(color: Colors.white)
-                : const Text(
-                    "TRANSLATE",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
+                : Text(
+                    AppLocalizations.of(context)!.translationLabel,
+                    style: TextStyle(color: Colors.white),
                   ),
           ),
         );
@@ -190,16 +206,19 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         if (state is TranslationError) displayResult = "Error: ${state.error}";
         if (state is TranslationLoading) displayResult = state.message;
 
-        if (displayResult.isEmpty && state is! TranslationLoading)
+        if (displayResult.isEmpty && state is! TranslationLoading) {
           return const SizedBox.shrink();
+        }
 
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.white70
+                : AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.white10),
+            border: Border.all(color: AppColors.surfaceDark, width: 1.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,20 +226,14 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "RESULT",
-                    style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                   if (state is TranslationSuccess)
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.copy,
                         size: 18,
-                        color: Colors.white38,
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.black
+                            : Colors.white,
                       ),
                       onPressed: () {
                         Clipboard.setData(

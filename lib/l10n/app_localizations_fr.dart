@@ -46,4 +46,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get confirm => 'Confirmer';
+
+  @override
+  String get textExtraction => 'Extraction de texte à partir d\'une image/Code QR';
+
+  @override
+  String get textExtractionLabel => 'Téléchargez une image pour identifier du texte ou des codes QR';
+
+  @override
+  String get textTranslation => 'Traduction de texte';
+
+  @override
+  String get galleryLabel => 'Galerie';
+
+  @override
+  String get cameraLabel => 'Appareil photo';
+
+  @override
+  String get translationLabel => 'Traduire';
+
+  @override
+  String get translationHint => 'Type or paste text here';
+
+  @override
+  String get selectZoneLabel => 'Choisir une zone';
 }

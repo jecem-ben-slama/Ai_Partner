@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_state.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
-import 'package:ai_partner/presentation/widgets/vision_result_card.dart'; // Updated widget
+import 'package:ai_partner/presentation/widgets/vision_result_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -15,7 +16,6 @@ class VisionScannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Universal Vision"),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -60,13 +60,11 @@ class VisionScannerScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         if (barcodes.isNotEmpty) ...[
-          _buildHeader("Detected Codes"),
           ...barcodes.map((res) => VisionResultCard(result: res)),
           const SizedBox(height: 24),
         ],
 
         if (textResults.isNotEmpty) ...[
-          _buildHeader("Recognized Text"),
           ...textResults.map((res) => VisionResultCard(result: res)),
         ],
 
@@ -75,23 +73,6 @@ class VisionScannerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4),
-      child: Text(
-        title.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  // --- Image Picking & Cropping Logic (Same as before) ---
-
   Widget _buildActionButtons(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -99,20 +80,24 @@ class VisionScannerScreen extends StatelessWidget {
         children: [
           Expanded(
             child: FloatingActionButton.extended(
-              heroTag: "camera",
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              heroTag: AppLocalizations.of(context)!.cameraLabel,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Theme.of(context).colorScheme.primary,
               onPressed: () => _handlePickImage(context, ImageSource.camera),
-              label: const Text("Camera"),
+              label: Text(AppLocalizations.of(context)!.cameraLabel),
               icon: const Icon(Icons.camera_alt),
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: FloatingActionButton.extended(
-              heroTag: "gallery",
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              heroTag: AppLocalizations.of(context)!.galleryLabel,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Theme.of(context).colorScheme.primary,
               onPressed: () => _handlePickImage(context, ImageSource.gallery),
-              label: const Text("Gallery"),
+              label: Text(AppLocalizations.of(context)!.galleryLabel),
               icon: const Icon(Icons.photo_library),
             ),
           ),
@@ -129,9 +114,11 @@ class VisionScannerScreen extends StatelessWidget {
     final xFile = await picker.pickImage(source: source);
 
     if (xFile != null) {
-      final croppedFile = await _cropImage(xFile.path, context);
-      if (croppedFile != null && context.mounted) {
-        context.read<VisionCubit>().scanImage(File(croppedFile.path));
+      if (context.mounted) {
+        final croppedFile = await _cropImage(xFile.path, context);
+        if (croppedFile != null && context.mounted) {
+          context.read<VisionCubit>().scanImage(File(croppedFile.path));
+        }
       }
     }
   }
@@ -141,14 +128,14 @@ class VisionScannerScreen extends StatelessWidget {
       sourcePath: path,
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'Select Zone',
+          toolbarTitle: AppLocalizations.of(context)!.selectZoneLabel,
           toolbarColor: const Color(0xFF364156),
           toolbarWidgetColor: Colors.white,
           activeControlsWidgetColor: Theme.of(context).colorScheme.primary,
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: false,
         ),
-        IOSUiSettings(title: 'Select Zone'),
+        IOSUiSettings(title: AppLocalizations.of(context)!.selectZoneLabel),
       ],
     );
   }
@@ -161,10 +148,10 @@ class VisionScannerScreen extends StatelessWidget {
           Icon(
             Icons.auto_awesome,
             size: 64,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          const Text("Upload an image to identify text or QR codes"),
+          Text(AppLocalizations.of(context)!.textExtractionLabel),
         ],
       ),
     );

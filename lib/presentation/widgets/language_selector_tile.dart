@@ -19,6 +19,9 @@ class LanguageSelectorTile extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       leading: const Icon(Icons.language_outlined),
       tileColor: Theme.of(context).colorScheme.surface,
+      iconColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : Theme.of(context).colorScheme.primary,
       title: Text(
         title,
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),

@@ -46,4 +46,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get confirm => 'تأكيد';
+
+  @override
+  String get textExtraction => 'استخراج النص من الصور أو رمز الاستجابة السريعة (QR)';
+
+  @override
+  String get textExtractionLabel => 'ارفع صورة لتحديد النصوص أو رموز QR';
+
+  @override
+  String get textTranslation => 'ترجمة النصوص';
+
+  @override
+  String get galleryLabel => 'المعرض';
+
+  @override
+  String get cameraLabel => 'الكاميرا';
+
+  @override
+  String get translationLabel => 'ترجمة';
+
+  @override
+  String get translationHint => 'اكتب أو الصق النص هنا';
+
+  @override
+  String get selectZoneLabel => 'تحديد المنطقة';
 }

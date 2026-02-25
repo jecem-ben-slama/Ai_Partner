@@ -11,6 +11,13 @@
   "resetTitle": "استعادة الإعدادات ", 
   "resetWarning": "سيؤدي هذا إلى إعادة ضبط جميع تفضيلاتك.",
   "cancel": "إلغاء",
-  "confirm": "تأكيد"
-
+  "confirm": "تأكيد",
+  "textExtraction": "استخراج النص من الصور أو رمز الاستجابة السريعة (QR)",
+  "textExtractionLabel": "ارفع صورة لتحديد النصوص أو رموز QR",
+  "textTranslation": "ترجمة النصوص",
+  "galleryLabel": "المعرض",
+  "cameraLabel": "الكاميرا",
+  "translationLabel": "ترجمة",
+  "translationHint": "اكتب أو الصق النص هنا",
+  "selectZoneLabel": "تحديد المنطقة"
 }

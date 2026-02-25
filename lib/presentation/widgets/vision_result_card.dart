@@ -31,20 +31,33 @@ class VisionResultCard extends StatelessWidget {
         result.type == VisionType.phone || _isProbablyPhone(result.content);
 
     return Card(
-      color: const Color(0xFF364156),
+      color: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
-        collapsedIconColor: Colors.white70,
-        iconColor: Theme.of(context).colorScheme.primary,
-        leading: Icon(
-          _getIcon(showCallAction),
-          color: Theme.of(context).colorScheme.primary,
+        iconColor: Theme.of(context).colorScheme.onSurface,
+        collapsedIconColor: Theme.of(context).colorScheme.onSurface,
+        expansionAnimationStyle: const AnimationStyle(
+          duration: Duration(milliseconds: 200),
+          curve: Curves.easeIn,
+          reverseCurve: Curves.easeIn,
+        ),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white70,
+
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            _getIcon(showCallAction),
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
         title: Text(
           result.label ?? "Result",
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -53,19 +66,22 @@ class VisionResultCard extends StatelessWidget {
           result.content,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 13,
+          ),
         ),
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: Colors.black12,
+            color: Theme.of(context).colorScheme.surface,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SelectableText(
                   result.content,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 15,
                     height: 1.4,
                   ),
@@ -96,6 +112,7 @@ class VisionResultCard extends StatelessWidget {
                       ActionButton(
                         icon: Icons.share_outlined,
                         label: "Share",
+                        // ignore: deprecated_member_use
                         onTap: () => Share.share(result.content),
                       ),
 

@@ -1,4 +1,5 @@
-import 'package:ai_partner/models/scan_result_model.dart'; // Unified model
+import 'package:ai_partner/core/theme/app_colors.dart';
+import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
@@ -14,6 +15,12 @@ class HistoryItemCard extends StatelessWidget {
 
   const HistoryItemCard({super.key, required this.scan});
 
+  // Helper to detect phone numbers in plain text (Handles spaces, dashes, parentheses)
+  bool _isProbablyPhone(String input) {
+    final cleanInput = input.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    return RegExp(r'^\+?[0-9]{7,15}$').hasMatch(cleanInput);
+  }
+
   Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -26,7 +33,7 @@ class HistoryItemCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF161925),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -55,34 +62,56 @@ class HistoryItemCard extends StatelessWidget {
             Text(
               "History Detail",
               style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : AppColors.primaryLight,
                 fontWeight: FontWeight.bold,
+                fontSize: 18,
                 letterSpacing: 1.1,
               ),
             ),
             const SizedBox(height: 15),
 
             // Render all results found in this scan session
-            ...results.map(
-              (res) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    res.label ?? "Result",
-                    style: const TextStyle(color: Colors.white38, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  SelectableText(
-                    res.content,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      height: 1.5,
-                    ),
-                  ),
-                  _buildActionRow(context, sheetContext, res),
-                  const Divider(color: Colors.white10, height: 30),
-                ],
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: results
+                    .map(
+                      (res) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            res.label ?? "Result",
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.7),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          SelectableText(
+                            res.content,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 16,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildActionRow(context, sheetContext, res),
+                          Divider(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outlineVariant.withOpacity(0.2),
+                            height: 30,
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
               ),
             ),
           ],
@@ -96,6 +125,10 @@ class HistoryItemCard extends StatelessWidget {
     BuildContext sheetContext,
     VisionResult res,
   ) {
+    // Check if type is phone OR if the content matches phone regex
+    final bool showCallAction =
+        res.type == VisionType.phone || _isProbablyPhone(res.content);
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -109,7 +142,20 @@ class HistoryItemCard extends StatelessWidget {
               _showFloatingSnack(context, "Copied to clipboard");
             },
           ),
-          if (res.type == VisionType.text || res.type == VisionType.barcode)
+
+          // SMART CALL BUTTON
+          if (showCallAction)
+            ActionButton(
+              icon: Icons.call,
+              label: "Call",
+              onTap: () => _launch(
+                "tel:${res.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
+              ),
+            ),
+
+          if (res.type == VisionType.text ||
+              res.type == VisionType.barcode ||
+              res.type == VisionType.qr)
             ActionButton(
               icon: Icons.g_translate_rounded,
               label: "Translate",
@@ -124,23 +170,20 @@ class HistoryItemCard extends StatelessWidget {
                 );
               },
             ),
-          if (res.type == VisionType.phone)
-            ActionButton(
-              icon: Icons.call,
-              label: "Call",
-              onTap: () => _launch("tel:${res.content}"),
-            ),
+
           if (res.type == VisionType.url)
             ActionButton(
               icon: Icons.open_in_browser,
               label: "Open",
               onTap: () => _launch(res.content),
             ),
+
           ActionButton(
             icon: Icons.share_outlined,
             label: "Share",
             onTap: () => Share.share(res.content),
           ),
+
           ActionButton(
             icon: Icons.delete_outline,
             label: "Remove",
@@ -164,17 +207,22 @@ class HistoryItemCard extends StatelessWidget {
         .map((r) => VisionResult.fromJson(r))
         .toList();
 
-    // Default preview text
+    // Determine the preview icon and text
+    final bool firstIsPhone =
+        results.isNotEmpty && _isProbablyPhone(results.first.content);
+
     final String previewText = results.isNotEmpty
         ? results.first.content
         : "Empty Scan";
-    final IconData previewIcon =
-        results.isNotEmpty && results.first.type == VisionType.text
-        ? Icons.text_snippet_outlined
-        : Icons.qr_code_2;
+
+    final IconData previewIcon = firstIsPhone
+        ? Icons.phone
+        : (results.isNotEmpty && results.first.type == VisionType.text
+              ? Icons.text_snippet_outlined
+              : Icons.qr_code_2);
 
     return Card(
-      color: const Color(0xFF364156),
+      color: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -189,7 +237,8 @@ class HistoryItemCard extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white70,
+
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -201,8 +250,8 @@ class HistoryItemCard extends StatelessWidget {
             previewText,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -211,12 +260,15 @@ class HistoryItemCard extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               DateFormat('MMM dd • HH:mm').format(date),
-              style: const TextStyle(color: Colors.white38, fontSize: 11),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 11,
+              ),
             ),
           ),
-          trailing: const Icon(
+          trailing: Icon(
             Icons.arrow_forward_ios,
-            color: Colors.white12,
+            color: Theme.of(context).colorScheme.onTertiary,
             size: 14,
           ),
         ),
@@ -230,6 +282,7 @@ class HistoryItemCard extends StatelessWidget {
         content: Text(msg),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(20),
+        backgroundColor: const Color(0xFF161925),
       ),
     );
   }
@@ -238,15 +291,9 @@ class HistoryItemCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF161925),
-        title: const Text(
-          "Remove Scan?",
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          "Delete this scan from history?",
-          style: TextStyle(color: Colors.white70),
-        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: const Text("Remove Scan?"),
+        content: const Text("Delete this scan from history?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),

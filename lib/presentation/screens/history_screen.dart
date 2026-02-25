@@ -39,7 +39,12 @@ class HistoryScreen extends StatelessWidget {
               itemCount: state.savedScans.length,
               itemBuilder: (context, index) {
                 final scan = state.savedScans[index];
-                return HistoryItemCard(scan: scan);
+                return Column(
+                  children: [
+                    HistoryItemCard(scan: scan),
+                    const Divider(),
+                  ],
+                );
               },
             );
           }

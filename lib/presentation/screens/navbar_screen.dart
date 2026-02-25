@@ -28,7 +28,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
       body: screens[index],
       bottomNavigationBar: FloatingNavBar(
         resizeToAvoidBottomInset: false,
-        color: Color(0xFF161925),
+        color: Theme.of(context).colorScheme.tertiary,
         selectedIconColor: Color(0xFFFDFFFC),
         unselectedIconColor: Color(0xFFFDFFFC),
         items: [

@@ -174,6 +174,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @textExtraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Text extraction from image/QR Code'**
+  String get textExtraction;
+
+  /// No description provided for @textExtractionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload an image to identify text or QR codes'**
+  String get textExtractionLabel;
+
+  /// No description provided for @textTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Text Translation'**
+  String get textTranslation;
+
+  /// No description provided for @galleryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get galleryLabel;
+
+  /// No description provided for @cameraLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get cameraLabel;
+
+  /// No description provided for @translationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get translationLabel;
+
+  /// No description provided for @translationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or paste text here'**
+  String get translationHint;
+
+  /// No description provided for @selectZoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Zone'**
+  String get selectZoneLabel;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

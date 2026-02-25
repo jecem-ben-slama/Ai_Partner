@@ -73,6 +73,7 @@ class AppView extends StatelessWidget {
               surface: AppColors.surfaceLight,
               onSurface: AppColors.onSurfaceLight,
               error: AppColors.error,
+              tertiary: AppColors.primaryLight,
             ),
             appBarTheme: const AppBarTheme(
               backgroundColor: AppColors.backgroundLight,
@@ -86,12 +87,13 @@ class AppView extends StatelessWidget {
             brightness: Brightness.dark,
             scaffoldBackgroundColor: AppColors.backgroundDark,
             colorScheme: ColorScheme.dark(
-              primary: AppColors.primaryDark,
+              primary: AppColors.primaryLight,
               onPrimary: AppColors.onPrimaryDark,
               secondary: AppColors.secondaryDark,
               onSecondary: AppColors.onSecondaryDark,
               surface: AppColors.surfaceDark,
               onSurface: AppColors.onSurfaceDark,
+              tertiary: Color(0xFF161925),
               error: AppColors.error,
             ),
             appBarTheme: const AppBarTheme(

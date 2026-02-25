@@ -11,6 +11,13 @@
   "resetTitle": "Restore Defaults",
   "resetWarning": "This will reset all your preferences.",
   "cancel" : "Cancel",
-  "confirm":"Confirm"
-
+  "confirm":"Confirm",
+  "textExtraction":"Text extraction from image/QR Code",
+  "textExtractionLabel":"Upload an image to identify text or QR codes",
+  "textTranslation":"Text Translation",
+  "galleryLabel":"Gallery",
+  "cameraLabel":"Camera",
+  "translationLabel":"Translate",
+  "translationHint":"Type or paste text here",
+  "selectZoneLabel":"Select Zone"
 }

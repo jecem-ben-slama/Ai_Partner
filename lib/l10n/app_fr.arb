@@ -11,6 +11,13 @@
   "resetTitle": "Réinitialiser", 
   "resetWarning": "Cela réinitialisera toutes vos préférences.",
   "cancel" : "Annuler",
-  "confirm":"Confirmer"
+  "confirm":"Confirmer",
+  "textExtraction": "Extraction de texte à partir d'une image/Code QR",
+  "textExtractionLabel": "Téléchargez une image pour identifier du texte ou des codes QR",
+  "textTranslation": "Traduction de texte",
+  "galleryLabel": "Galerie",
+  "cameraLabel": "Appareil photo",
+  "translationLabel": "Traduire",
+  "selectZoneLabel": "Choisir une zone"
 
 }
