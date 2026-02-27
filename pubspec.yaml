@@ -51,6 +51,7 @@ dependencies:
   image_cropper: ^11.0.0
   share_plus: ^12.0.1
   flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -62,12 +63,17 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png" # Path to your source icon
+  min_sdk_android: 21
 flutter_native_splash:
   # The background color of the splash screen
   color: "#ffffff"
   
   # The path to your logo image (ensure it's in your assets folder)
-  image: assets/images/icon.jpg
+  image: assets/images/app_icon.png
   
   # Positioning and scaling
   fullscreen: true
