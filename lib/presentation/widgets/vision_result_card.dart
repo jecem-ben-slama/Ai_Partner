@@ -25,10 +25,59 @@ class VisionResultCard extends StatelessWidget {
     }
   }
 
+  /// Shows a dialog to name the item before saving
+  void _showSaveDialog(BuildContext context) {
+    final TextEditingController nameController = TextEditingController(
+      // Default name based on the type
+      text: result.label ?? result.type.name.toUpperCase(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Save Item"),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: "Item Name",
+            hintText: "e.g. My Phone Number, Work Link...",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final String customName = nameController.text.trim();
+              if (customName.isNotEmpty) {
+                // Create a copy of the result with the new label
+                final updatedResult = result.copyWith(label: customName);
+
+                context.read<HistoryCubit>().saveNewScan([updatedResult]);
+
+                Navigator.pop(context);
+                _showFloatingSnack(context, "Saved as '$customName'");
+              }
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bool showCallAction =
+    final bool isPhone =
         result.type == VisionType.phone || _isProbablyPhone(result.content);
+    final bool isUrl = result.type == VisionType.url;
+    final bool canTranslate =
+        result.type == VisionType.text ||
+        result.type == VisionType.barcode ||
+        result.type == VisionType.qr;
 
     return Card(
       color: Theme.of(context).colorScheme.surface,
@@ -40,7 +89,6 @@ class VisionResultCard extends StatelessWidget {
         expansionAnimationStyle: const AnimationStyle(
           duration: Duration(milliseconds: 200),
           curve: Curves.easeIn,
-          reverseCurve: Curves.easeIn,
         ),
         leading: Container(
           padding: const EdgeInsets.all(8),
@@ -49,7 +97,7 @@ class VisionResultCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
-            _getIcon(showCallAction),
+            _getIcon(isPhone),
             color: Theme.of(context).colorScheme.primary,
           ),
         ),
@@ -90,20 +138,6 @@ class VisionResultCard extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      // TTS BUTTON
-                      // Inside VisionResultCard Row children:
-                      ActionButton(
-                        icon: Icons.record_voice_over_rounded,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TtsPlayerPage(text: result.content),
-                            ),
-                          );
-                        },
-                      ),
                       ActionButton(
                         icon: Icons.copy,
                         onTap: () {
@@ -113,45 +147,54 @@ class VisionResultCard extends StatelessWidget {
                           _showFloatingSnack(context, "Copied!");
                         },
                       ),
+
+                      // UPDATED SAVE BUTTON
                       ActionButton(
                         icon: Icons.bookmark_border,
-                        onTap: () {
-                          context.read<HistoryCubit>().saveNewScan([result]);
-                          _showFloatingSnack(context, "Saved!");
-                        },
+                        onTap: () => _showSaveDialog(context),
                       ),
+
                       ActionButton(
                         icon: Icons.share_outlined,
-                        // ignore: deprecated_member_use
                         onTap: () => Share.share(result.content),
                       ),
-                      if (showCallAction)
+
+                      if (result.type == VisionType.text)
+                        ActionButton(
+                          icon: Icons.record_voice_over_rounded,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TtsPlayerPage(text: result.content),
+                            ),
+                          ),
+                        ),
+
+                      if (canTranslate)
+                        ActionButton(
+                          icon: Icons.g_translate_rounded,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (c) =>
+                                  TranslatorScreen(initialText: result.content),
+                            ),
+                          ),
+                        ),
+
+                      if (isPhone)
                         ActionButton(
                           icon: Icons.call,
                           onTap: () => _launch(
                             "tel:${result.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
                           ),
                         ),
-                      if (result.type == VisionType.url)
+
+                      if (isUrl)
                         ActionButton(
                           icon: Icons.open_in_browser,
                           onTap: () => _launch(result.content),
-                        ),
-                      if (result.type == VisionType.text ||
-                          result.type == VisionType.barcode ||
-                          result.type == VisionType.qr)
-                        ActionButton(
-                          icon: Icons.g_translate_rounded,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (c) => TranslatorScreen(
-                                  initialText: result.content,
-                                ),
-                              ),
-                            );
-                          },
                         ),
                     ],
                   ),
@@ -167,16 +210,15 @@ class VisionResultCard extends StatelessWidget {
   IconData _getIcon(bool isPhone) {
     if (isPhone) return Icons.phone;
     switch (result.type) {
-      case VisionType.text:
-        return Icons.text_fields;
       case VisionType.url:
         return Icons.language;
-      case VisionType.phone:
-        return Icons.phone;
       case VisionType.barcode:
         return Icons.qr_code_2;
       case VisionType.qr:
         return Icons.qr_code;
+      case VisionType.text:
+      default:
+        return Icons.text_fields;
     }
   }
 

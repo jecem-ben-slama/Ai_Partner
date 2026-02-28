@@ -65,8 +65,9 @@ class MyApp extends StatelessWidget {
         // FIXED: Now passing the ttsService instance correctly
         BlocProvider(create: (context) => TtsCubit(ttsService)),
       ],
-      child:
-          const AppView(), // Removed SafeArea from here, usually better inside AppView or Screens
+      child: SafeArea(
+        child: const AppView(),
+      ), // Removed SafeArea from here, usually better inside AppView or Screens
     );
   }
 }

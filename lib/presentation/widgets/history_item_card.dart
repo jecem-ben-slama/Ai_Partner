@@ -15,7 +15,6 @@ class HistoryItemCard extends StatelessWidget {
 
   const HistoryItemCard({super.key, required this.scan});
 
-  // Helper to detect phone numbers in plain text (Handles spaces, dashes, parentheses)
   bool _isProbablyPhone(String input) {
     final cleanInput = input.replaceAll(RegExp(r'[\s\-\(\)]'), '');
     return RegExp(r'^\+?[0-9]{7,15}$').hasMatch(cleanInput);
@@ -28,7 +27,6 @@ class HistoryItemCard extends StatelessWidget {
     }
   }
 
-  // --- The Detail Popup Logic ---
   void _showScanDetail(BuildContext context, List<VisionResult> results) {
     showModalBottomSheet(
       context: context,
@@ -71,43 +69,40 @@ class HistoryItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 15),
-
-            // Render all results found in this scan session
             Flexible(
               child: ListView(
                 shrinkWrap: true,
-                children: results
-                    .map(
-                      (res) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            res.label ?? "Result",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          SelectableText(
-                            res.content,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: 16,
-                              height: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildActionRow(context, sheetContext, res),
-                          Divider(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                            height: 30,
-                          ),
-                        ],
+                children: results.map((res) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        res.label?.toUpperCase() ?? "RESULT",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
                       ),
-                    )
-                    .toList(),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        res.content,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildActionRow(context, sheetContext, res),
+                      Divider(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        height: 30,
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -121,7 +116,6 @@ class HistoryItemCard extends StatelessWidget {
     BuildContext sheetContext,
     VisionResult res,
   ) {
-    // Check if type is phone OR if the content matches phone regex
     final bool showCallAction =
         res.type == VisionType.phone || _isProbablyPhone(res.content);
 
@@ -129,6 +123,14 @@ class HistoryItemCard extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
+          // FAVORITE TOGGLE IN DETAIL VIEW
+          ActionButton(
+            icon: res.isFavorite ? Icons.favorite : Icons.favorite_border,
+            onTap: () {
+              context.read<HistoryCubit>().toggleFavorite(scan['id']);
+              Navigator.pop(sheetContext); // Close sheet to show update
+            },
+          ),
           ActionButton(
             icon: Icons.copy,
             onTap: () {
@@ -137,8 +139,6 @@ class HistoryItemCard extends StatelessWidget {
               _showFloatingSnack(context, "Copied to clipboard");
             },
           ),
-
-          // SMART CALL BUTTON
           if (showCallAction)
             ActionButton(
               icon: Icons.call,
@@ -146,7 +146,6 @@ class HistoryItemCard extends StatelessWidget {
                 "tel:${res.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
               ),
             ),
-
           if (res.type == VisionType.text ||
               res.type == VisionType.barcode ||
               res.type == VisionType.qr)
@@ -163,19 +162,15 @@ class HistoryItemCard extends StatelessWidget {
                 );
               },
             ),
-
           if (res.type == VisionType.url)
             ActionButton(
               icon: Icons.open_in_browser,
               onTap: () => _launch(res.content),
             ),
-
           ActionButton(
             icon: Icons.share_outlined,
-            // ignore: deprecated_member_use
             onTap: () => Share.share(res.content),
           ),
-
           ActionButton(
             icon: Icons.delete_outline,
             onTap: () {
@@ -191,20 +186,23 @@ class HistoryItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DateTime date = DateTime.parse(scan['timestamp']);
-
-    // Parse the new results structure
     final List<dynamic> rawResults = scan['results'] ?? [];
     final List<VisionResult> results = rawResults
         .map((r) => VisionResult.fromJson(r))
         .toList();
 
-    // Determine the preview icon and text
+    final bool isFavorite = results.isNotEmpty && results.first.isFavorite;
+
+    final String itemTitle = results.isNotEmpty
+        ? (results.first.label ?? "Untitled Scan")
+        : "Empty Scan";
+
+    final String itemSubtitle = results.isNotEmpty
+        ? results.first.content.replaceAll('\n', ' ')
+        : "";
+
     final bool firstIsPhone =
         results.isNotEmpty && _isProbablyPhone(results.first.content);
-
-    final String previewText = results.isNotEmpty
-        ? results.first.content
-        : "Empty Scan";
 
     final IconData previewIcon = firstIsPhone
         ? Icons.phone
@@ -228,8 +226,7 @@ class HistoryItemCard extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white70,
-
+              color: Colors.white10,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -238,29 +235,63 @@ class HistoryItemCard extends StatelessWidget {
             ),
           ),
           title: Text(
-            previewText,
+            itemTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              DateFormat('MMM dd • HH:mm').format(date),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 11,
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (itemSubtitle.isNotEmpty)
+                Text(
+                  itemSubtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 13,
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Text(
+                DateFormat('MMM dd • HH:mm').format(date),
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  fontSize: 10,
+                ),
               ),
-            ),
+            ],
           ),
-          trailing: Icon(
-            Icons.arrow_forward_ios,
-            color: Theme.of(context).colorScheme.onTertiary,
-            size: 14,
+          trailing: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            children: [
+              // FAVORITE BUTTON ON THE CARD
+              IconButton(
+                onPressed: () {
+                  context.read<HistoryCubit>().toggleFavorite(scan['id']);
+                },
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite
+                      ? Colors.redAccent
+                      : Theme.of(context).colorScheme.outline,
+                  size: 22,
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).colorScheme.outline,
+                size: 14,
+              ),
+            ],
           ),
         ),
       ),

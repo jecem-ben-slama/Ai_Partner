@@ -28,7 +28,28 @@ class HistoryCubit extends Cubit<HistoryState> {
       emit(HistoryError("Failed to save."));
     }
   }
+// Inside history_cubit.dart
+  void toggleFavorite(String id) async {
+    if (state is HistoryLoaded) {
+      final List<Map<String, dynamic>> currentHistory = List.from(
+        (state as HistoryLoaded).savedScans,
+      );
 
+      for (var entry in currentHistory) {
+        if (entry['id'] == id) {
+          // Toggle the favorite status of the first result
+          final results = entry['results'] as List;
+          if (results.isNotEmpty) {
+            results[0]['isFavorite'] = !(results[0]['isFavorite'] ?? false);
+          }
+        }
+      }
+
+      // Save to SharedPreferences via your StorageService
+      await _storageService.saveFullHistory(currentHistory);
+      emit(HistoryLoaded(currentHistory));
+    }
+  }
   Future<void> deleteItem(String id) async {
     try {
       await _storageService.deleteScanById(id);

@@ -19,12 +19,20 @@ class TranslatorScreen extends StatefulWidget {
 class _TranslatorScreenState extends State<TranslatorScreen> {
   late TextEditingController _textController;
   TranslateLanguage _sourceLang = TranslateLanguage.english;
-  TranslateLanguage _targetLang = TranslateLanguage.french;
+  TranslateLanguage? _targetLang;
 
   @override
   void initState() {
     super.initState();
     _textController = TextEditingController(text: widget.initialText ?? "");
+
+    if (widget.initialText != null && widget.initialText!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<TranslationCubit>().detectAndSetScannedText(
+          widget.initialText!,
+        );
+      });
+    }
   }
 
   @override
@@ -33,12 +41,18 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     super.dispose();
   }
 
+  TranslateLanguage? _mapCodeToLanguage(String code) {
+    return BCP47Code.fromRawValue(code);
+  }
+
   void _swapLanguages() {
-    setState(() {
-      final temp = _sourceLang;
-      _sourceLang = _targetLang;
-      _targetLang = temp;
-    });
+    if (_targetLang != null) {
+      setState(() {
+        final temp = _sourceLang;
+        _sourceLang = _targetLang!;
+        _targetLang = temp;
+      });
+    }
   }
 
   String _getLocalizedLanguageName(
@@ -54,6 +68,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         return "English";
       case TranslateLanguage.spanish:
         return "Español";
+      case TranslateLanguage.german:
+        return "Deutsch";
+      case TranslateLanguage.italian:
+        return "Italiano";
       default:
         return lang.name.toUpperCase();
     }
@@ -61,33 +79,86 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(AppLocalizations.of(context)!.translationLabel),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // 1. Language Selector Row
-            _buildLanguageSelector(),
-            const SizedBox(height: 25),
-
-            // 2. Input Card
-            _buildInputArea(),
-            const SizedBox(height: 20),
-
-            // 3. Action Buttons & Status
-            _buildActionButton(),
-            const SizedBox(height: 25),
-
-            // 4. Output Card (Result)
-            _buildOutputArea(),
-          ],
+    return BlocListener<TranslationCubit, TranslationState>(
+      listener: (context, state) {
+        if (state is TranslationDetected) {
+          final detected = _mapCodeToLanguage(state.detectedLangCode);
+          if (detected != null) {
+            setState(() => _sourceLang = detected);
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(AppLocalizations.of(context)!.translationLabel),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              _buildLanguageSelector(),
+              _buildDetectionStatus(),
+              const SizedBox(height: 15),
+              _buildInputArea(),
+              const SizedBox(height: 20),
+              _buildActionButton(),
+              const SizedBox(height: 25),
+              _buildOutputArea(),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDetectionStatus() {
+    return BlocBuilder<TranslationCubit, TranslationState>(
+      builder: (context, state) {
+        // Only show detection status if there is actually text to detect
+        if (_textController.text.isEmpty) return const SizedBox.shrink();
+
+        if (state is TranslationDetecting) {
+          return const Padding(
+            padding: EdgeInsets.only(top: 8.0),
+            child: Text(
+              "Identifying language...",
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: Colors.blueGrey,
+              ),
+            ),
+          );
+        }
+
+        if (state is TranslationDetected) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.auto_awesome,
+                  size: 14,
+                  color: Colors.blueAccent,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  "Detected: ${_getLocalizedLanguageName(context, _sourceLang)}",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 
@@ -107,21 +178,25 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
             child: _langDropdown(
               _sourceLang,
               (v) => setState(() => _sourceLang = v!),
+              "From",
             ),
           ),
           IconButton(
+            onPressed: _targetLang == null ? null : _swapLanguages,
             icon: Icon(
               Icons.swap_horiz,
-              color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.black
-                  : Colors.white,
+              color: _targetLang == null
+                  ? Colors.grey
+                  : (Theme.of(context).brightness == Brightness.light
+                        ? Colors.black
+                        : Colors.white),
             ),
-            onPressed: _swapLanguages,
           ),
           Expanded(
             child: _langDropdown(
               _targetLang,
-              (v) => setState(() => _targetLang = v!),
+              (v) => setState(() => _targetLang = v),
+              "Translate to",
             ),
           ),
         ],
@@ -130,13 +205,18 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   }
 
   Widget _langDropdown(
-    TranslateLanguage current,
+    TranslateLanguage? current,
     ValueChanged<TranslateLanguage?> onChanged,
+    String hintText,
   ) {
     return DropdownButton<TranslateLanguage>(
       value: current,
       isExpanded: true,
       underline: const SizedBox(),
+      hint: Text(
+        hintText,
+        style: const TextStyle(fontSize: 14, color: Colors.grey),
+      ),
       dropdownColor: Theme.of(context).brightness == Brightness.light
           ? Colors.white
           : AppColors.surfaceDark,
@@ -169,6 +249,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       child: TextField(
         controller: _textController,
         maxLines: 6,
+        onChanged: (_) => setState(
+          () {},
+        ), // Trigger rebuild to update detection status and button
         style: TextStyle(
           color: Theme.of(context).brightness == Brightness.light
               ? Colors.black
@@ -177,11 +260,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         ),
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.translationHint,
-          hintStyle: TextStyle(
-            color: Theme.of(context).brightness == Brightness.light
-                ? Colors.black54
-                : Colors.white60,
-          ),
+          hintStyle: const TextStyle(color: Colors.grey),
           border: InputBorder.none,
         ),
       ),
@@ -191,18 +270,22 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   Widget _buildActionButton() {
     return BlocBuilder<TranslationCubit, TranslationState>(
       builder: (context, state) {
-        final isLoading = state is TranslationLoading;
+        final bool isBusy =
+            state is TranslationLoading || state is TranslationDetecting;
+        final bool canTranslate =
+            _targetLang != null && _textController.text.trim().isNotEmpty;
+
         return SizedBox(
           width: double.infinity,
           height: 55,
           child: ElevatedButton(
-            onPressed: isLoading
+            onPressed: (isBusy || !canTranslate)
                 ? null
                 : () {
                     context.read<TranslationCubit>().translateText(
                       text: _textController.text,
                       source: _sourceLang,
-                      target: _targetLang,
+                      target: _targetLang!,
                     );
                   },
             style: ElevatedButton.styleFrom(
@@ -213,10 +296,12 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: isLoading
+            child: isBusy
                 ? const CircularProgressIndicator(color: Colors.white)
                 : Text(
-                    AppLocalizations.of(context)!.translationLabel,
+                    _targetLang == null
+                        ? "Pick a target language"
+                        : AppLocalizations.of(context)!.translationLabel,
                     style: const TextStyle(color: Colors.white),
                   ),
           ),
@@ -233,9 +318,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         if (state is TranslationError) displayResult = "Error: ${state.error}";
         if (state is TranslationLoading) displayResult = state.message;
 
-        if (displayResult.isEmpty && state is! TranslationLoading) {
+        if (displayResult.isEmpty && state is! TranslationLoading)
           return const SizedBox.shrink();
-        }
 
         return Container(
           width: double.infinity,
@@ -254,7 +338,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   if (state is TranslationSuccess) ...[
-                    // Listen Button
                     IconButton(
                       icon: Icon(
                         Icons.volume_up_rounded,
@@ -262,7 +345,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             ? Colors.black
                             : Colors.white,
                       ),
-                      tooltip: "Speak translation",
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -273,7 +355,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         );
                       },
                     ),
-                    // Copy Button
                     IconButton(
                       icon: Icon(
                         Icons.copy,
