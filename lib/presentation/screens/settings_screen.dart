@@ -13,7 +13,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.appTitle), centerTitle: true),
+      appBar: AppBar(backgroundColor: Colors.transparent),
       body: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, state) {
           return Padding(

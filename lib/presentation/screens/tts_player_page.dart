@@ -14,46 +14,32 @@ class TtsPlayerPage extends StatefulWidget {
 
 class _TtsPlayerPageState extends State<TtsPlayerPage> {
   late TextEditingController _controller;
-  // 1. Create a local variable to hold the reference
   late TtsCubit _ttsCubit;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.text);
-    // 2. Grab the reference immediately
     _ttsCubit = context.read<TtsCubit>();
   }
 
   @override
   void dispose() {
-    // 3. Use the local reference instead of context.read
     _ttsCubit.stop();
     _controller.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<TtsCubit, TtsState>(
-      // Listen for errors to show a SnackBar
       listenWhen: (prev, curr) => curr.status == TtsStatus.error,
       listener: (context, state) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(state.errorMessage),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        // Using a custom method or standard Snack if you prefer,
+        // but here we focus on the UI
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "AI Narrator",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-        ),
+        appBar: AppBar(backgroundColor: Colors.transparent),
         body: BlocBuilder<TtsCubit, TtsState>(
           builder: (context, state) {
             final isPlaying = state.status == TtsStatus.playing;
@@ -63,64 +49,63 @@ class _TtsPlayerPageState extends State<TtsPlayerPage> {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    child: Container(
+                    padding: const EdgeInsets.all(20.0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceVariant.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(24),
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                         border: Border.all(
-                          color: state.status == TtsStatus.error
-                              ? Colors.red.withOpacity(0.5)
+                          color: isPlaying
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.5)
                               : Theme.of(context).colorScheme.outlineVariant,
+                          width: 2,
                         ),
                       ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: isPlaying
-                            ? HighlightedText(
-                                fullText: _controller.text,
-                                start: state.start,
-                                end: state.end,
-                              )
-                            : TextField(
-                                controller: _controller,
-                                maxLines: null,
-                                enabled:
-                                    !isPlaying &&
-                                    !isLoading, // Disable editing while playing/loading
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  height: 1.6,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(25),
+                          child: isPlaying
+                              ? HighlightedText(
+                                  fullText: _controller.text,
+                                  start: state.start,
+                                  end: state.end,
+                                )
+                              : TextField(
+                                  controller: _controller,
+                                  maxLines: null,
+                                  enabled: !isPlaying && !isLoading,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    height: 1.6,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText: "What should I read for you?",
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(color: Colors.grey),
+                                  ),
                                 ),
-                                decoration: const InputDecoration(
-                                  hintText: "Enter or edit text here...",
-                                  border: InputBorder.none,
-                                ),
-                              ),
+                        ),
                       ),
                     ),
                   ),
                 ),
 
-                // Detection Badge
                 if (state.detectedLanguage.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Chip(
-                      label: Text("Detected: ${state.detectedLanguage}"),
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.primaryContainer,
-                    ),
-                  ),
+                  _buildLanguageBadge(state.detectedLanguage),
 
-                _buildModernControls(context, state),
-                const SizedBox(height: 30),
+                _buildModernPlayerControls(context, state),
+                const SizedBox(height: 40),
               ],
             );
           },
@@ -129,83 +114,164 @@ class _TtsPlayerPageState extends State<TtsPlayerPage> {
     );
   }
 
-  Widget _buildModernControls(BuildContext context, TtsState state) {
+  Widget _buildLanguageBadge(String lang) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        "Detected: ${lang.toUpperCase()}",
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernPlayerControls(BuildContext context, TtsState state) {
     final isPlaying = state.status == TtsStatus.playing;
     final isLoading = state.status == TtsStatus.loading;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        height: 90,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(32),
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(45),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            const SizedBox(width: 8),
-            Text(
-              "${(state.speed * 2).toStringAsFixed(1)}x",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            // Speed Control Column
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "${(state.speed * 2).toStringAsFixed(1)}x",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const Text(
+                  "Speed",
+                  style: TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+              ],
             ),
+
             Expanded(
-              child: Slider(
-                value: state.speed,
-                min: 0.1,
-                max: 1.0,
-                onChanged: isPlaying || isLoading
-                    ? null
-                    : (val) {
-                        context.read<TtsCubit>().updateSpeed(val);
-                      },
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: Theme.of(context).colorScheme.primary,
+                  inactiveTrackColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withOpacity(0.1),
+                  thumbColor: Theme.of(context).colorScheme.primary,
+                  overlayColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withOpacity(0.2),
+                  trackHeight: 4,
+                ),
+                child: Slider(
+                  value: state.speed,
+                  min: 0.1,
+                  max: 1.0,
+                  onChanged: isPlaying || isLoading
+                      ? null
+                      : (val) {
+                          context.read<TtsCubit>().updateSpeed(val);
+                        },
+                ),
               ),
             ),
 
-            // FAB-style Main Action Button
-            GestureDetector(
-              onTap: isLoading
-                  ? null
-                  : () {
-                      if (isPlaying) {
-                        context.read<TtsCubit>().stop();
-                      } else {
-                        FocusScope.of(context).unfocus();
-                        context.read<TtsCubit>().detectAndSpeak(
-                          _controller.text,
-                        );
-                      }
-                    },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 56,
-                width: 56,
-                decoration: BoxDecoration(
-                  color: isLoading
-                      ? Colors.grey
-                      : (isPlaying
-                            ? Colors.redAccent
-                            : Theme.of(context).colorScheme.primary),
-                  borderRadius: BorderRadius.circular(isPlaying ? 16 : 28),
-                ),
-                child: Center(
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Icon(
-                          isPlaying
-                              ? Icons.stop_rounded
-                              : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                ),
-              ),
+            // Modern Play/Stop Button with Text Detection
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, child) {
+                final bool hasText = value.text.trim().isNotEmpty;
+                final bool canPress = hasText && !isLoading;
+
+                // If it is playing, we want it enabled to stop it
+                final bool effectivelyEnabled = isPlaying || canPress;
+
+                return GestureDetector(
+                  onTap: effectivelyEnabled
+                      ? () {
+                          if (isPlaying) {
+                            context.read<TtsCubit>().stop();
+                          } else {
+                            FocusScope.of(context).unfocus();
+                            context.read<TtsCubit>().detectAndSpeak(
+                              _controller.text,
+                            );
+                          }
+                        }
+                      : null,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: 64,
+                    width: 64,
+                    decoration: BoxDecoration(
+                      color: !effectivelyEnabled
+                          ? Colors.grey.withOpacity(0.3) // Greyed out state
+                          : (isPlaying
+                                ? Colors.redAccent
+                                : Theme.of(context).colorScheme.primary),
+                      shape: BoxShape.circle,
+                      boxShadow: effectivelyEnabled
+                          ? [
+                              BoxShadow(
+                                color:
+                                    (isPlaying
+                                            ? Colors.redAccent
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.primary)
+                                        .withOpacity(0.4),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                            ]
+                          : [],
+                    ),
+                    child: Center(
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 28,
+                              width: 28,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : Icon(
+                              isPlaying
+                                  ? Icons.stop_rounded
+                                  : Icons.play_arrow_rounded,
+                              color: effectivelyEnabled
+                                  ? Colors.white
+                                  : Colors.grey,
+                              size: 38,
+                            ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

@@ -31,10 +31,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          "History",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined),
@@ -55,17 +52,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 }
 
                 if (state is HistoryLoaded) {
-                  // COMBINED FILTERING LOGIC
                   final filteredScans = state.savedScans.where((scan) {
                     final results = scan['results'] as List;
                     final firstResult = results.isNotEmpty ? results.first : {};
 
-                    // 1. Favorite Logic
                     final bool isFav = firstResult['isFavorite'] == true;
                     final bool matchesFavoriteFilter =
                         !_showOnlyFavorites || isFav;
 
-                    // 2. Search Logic (Checks both Label and Content)
                     final String label =
                         firstResult['label']?.toString().toLowerCase() ?? "";
                     final String content =
@@ -98,7 +92,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       return Padding(
                         key: ValueKey(scan['id']),
                         padding: const EdgeInsets.only(bottom: 8.0),
-                        child: HistoryItemCard(scan: scan),
+                        child: Column(
+                          children: [
+                            HistoryItemCard(scan: scan),
+                            const Divider(),
+                          ],
+                        ),
                       );
                     },
                   );
@@ -180,14 +179,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isActive
-                ? colorScheme.primary
-                : Colors.white.withOpacity(0.05),
+            color: isActive ? colorScheme.primary : Colors.grey,
             borderRadius: BorderRadius.circular(12),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: colorScheme.primary.withOpacity(0.3),
+                      color: colorScheme.primary,
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),

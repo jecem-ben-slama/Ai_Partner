@@ -2,6 +2,7 @@ import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
+import 'package:ai_partner/presentation/screens/tts_player_page.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +26,67 @@ class HistoryItemCard extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  void _showRenameDialog(
+    BuildContext context,
+    String currentLabel,
+    String scanId,
+  ) {
+    final TextEditingController renameController = TextEditingController(
+      text: currentLabel,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: const Text("Rename Scan"),
+        content: TextField(
+          controller: renameController,
+          autofocus: true,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          decoration: InputDecoration(
+            hintText: "Enter new name",
+            filled: true,
+            fillColor: Colors.white10,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              "Cancel",
+              style: TextStyle(
+                color:
+                    Theme.of(context).colorScheme.brightness == Brightness.light
+                    ? Colors.black
+                    : Colors.white,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              final newName = renameController.text.trim();
+              if (newName.isNotEmpty) {
+                context.read<HistoryCubit>().updateLabel(scanId, newName);
+              }
+              Navigator.pop(dialogContext);
+            },
+            child: Text(
+              "Save",
+              style: TextStyle(
+                color:
+                    Theme.of(context).colorScheme.brightness == Brightness.light
+                    ? Colors.black
+                    : Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showScanDetail(BuildContext context, List<VisionResult> results) {
@@ -116,39 +178,65 @@ class HistoryItemCard extends StatelessWidget {
     BuildContext sheetContext,
     VisionResult res,
   ) {
-    final bool showCallAction =
+    // Logic for conditional visibility
+    final bool hasContent = res.content.trim().isNotEmpty;
+    final bool isPureText =
+        res.type == VisionType.text; // Strict check for text
+    final bool isPhone =
         res.type == VisionType.phone || _isProbablyPhone(res.content);
+    final bool isUrl =
+        res.type == VisionType.url || res.content.startsWith('http');
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          // FAVORITE TOGGLE IN DETAIL VIEW
+          // TTS - ONLY WHEN TEXT
+          if (hasContent && isPureText)
+            ActionButton(
+              icon: Icons.volume_up_rounded,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TtsPlayerPage(text: res.content),
+                  ),
+                );
+              },
+            ),
+
+          // RENAME
           ActionButton(
-            icon: res.isFavorite ? Icons.favorite : Icons.favorite_border,
+            icon: Icons.edit_outlined,
             onTap: () {
-              context.read<HistoryCubit>().toggleFavorite(scan['id']);
-              Navigator.pop(sheetContext); // Close sheet to show update
-            },
-          ),
-          ActionButton(
-            icon: Icons.copy,
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: res.content));
               Navigator.pop(sheetContext);
-              _showFloatingSnack(context, "Copied to clipboard");
+              _showRenameDialog(context, res.label ?? "", scan['id']);
             },
           ),
-          if (showCallAction)
+
+          // COPY
+          if (hasContent)
+            ActionButton(
+              icon: Icons.copy,
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: res.content));
+                Navigator.pop(sheetContext);
+                _showTopNotification(context, "coped");
+              },
+            ),
+
+          // CALL
+          if (isPhone)
             ActionButton(
               icon: Icons.call,
               onTap: () => _launch(
-                "tel:${res.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
+                "tel:${res.content.replaceAll(RegExp(r'[^\d+]'), '')}",
               ),
             ),
-          if (res.type == VisionType.text ||
-              res.type == VisionType.barcode ||
-              res.type == VisionType.qr)
+
+          // TRANSLATE - ONLY WHEN TEXT
+          if (hasContent && isPureText)
             ActionButton(
               icon: Icons.g_translate_rounded,
               onTap: () {
@@ -162,15 +250,22 @@ class HistoryItemCard extends StatelessWidget {
                 );
               },
             ),
-          if (res.type == VisionType.url)
+
+          // OPEN BROWSER
+          if (isUrl)
             ActionButton(
               icon: Icons.open_in_browser,
               onTap: () => _launch(res.content),
             ),
-          ActionButton(
-            icon: Icons.share_outlined,
-            onTap: () => Share.share(res.content),
-          ),
+
+          // SHARE
+          if (hasContent)
+            ActionButton(
+              icon: Icons.share_outlined,
+              onTap: () => Share.share(res.content),
+            ),
+
+          // DELETE
           ActionButton(
             icon: Icons.delete_outline,
             onTap: () {
@@ -226,7 +321,7 @@ class HistoryItemCard extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white10,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -261,9 +356,7 @@ class HistoryItemCard extends StatelessWidget {
               Text(
                 DateFormat('MMM dd • HH:mm').format(date),
                 style: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 10,
                 ),
               ),
@@ -273,7 +366,6 @@ class HistoryItemCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 8,
             children: [
-              // FAVORITE BUTTON ON THE CARD
               IconButton(
                 onPressed: () {
                   context.read<HistoryCubit>().toggleFavorite(scan['id']);
@@ -298,15 +390,45 @@ class HistoryItemCard extends StatelessWidget {
     );
   }
 
-  void _showFloatingSnack(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(20),
-        backgroundColor: const Color(0xFF161925),
+  void _showTopNotification(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 10,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF161925),
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: const [
+                BoxShadow(color: Colors.black26, blurRadius: 10),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: Colors.greenAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(message, style: const TextStyle(color: Colors.white)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
+
+    overlay.insert(overlayEntry);
+
+    // Remove it after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
   }
 
   void _showDeleteConfirm(BuildContext context) {

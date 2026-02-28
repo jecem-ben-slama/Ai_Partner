@@ -1,13 +1,13 @@
-import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
   final IconData icon;
+  final Color? iconColor;
   final VoidCallback onTap;
 
   const ActionButton({
     super.key,
-
+    this.iconColor,
     required this.icon,
     required this.onTap,
   });
@@ -22,12 +22,9 @@ class ActionButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : AppColors.primaryLight,
+              color: iconColor,
               size: 20,
             ),
-           
           ],
         ),
       ),
