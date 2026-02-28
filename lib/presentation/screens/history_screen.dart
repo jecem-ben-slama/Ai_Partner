@@ -1,3 +1,4 @@
+import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/logic/cubit/storage/history_state.dart';
 import 'package:ai_partner/presentation/widgets/history_item_card.dart';
@@ -9,13 +10,15 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined),
-            onPressed: () => _showDeleteConfirm(context),
+            onPressed: () => _showDeleteConfirm(context, l10n),
           ),
         ],
       ),
@@ -71,23 +74,23 @@ class HistoryScreen extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirm(BuildContext context) {
+  void _showDeleteConfirm(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Clear History?"),
-        content: const Text("This will permanently delete all saved scans."),
+        title: Text(l10n.clearHistoryTitle),
+        content: Text(l10n.clearHistoryMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               context.read<HistoryCubit>().clearAll();
               Navigator.pop(dialogContext);
             },
-            child: const Text("Clear All", style: TextStyle(color: Colors.red)),
+            child: Text(l10n.confirm, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
   final IconData icon;
-  final String label;
   final VoidCallback onTap;
 
   const ActionButton({
     super.key,
 
     required this.icon,
-    required this.label,
     required this.onTap,
   });
 
@@ -29,16 +27,7 @@ class ActionButton extends StatelessWidget {
                   : AppColors.primaryLight,
               size: 20,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : AppColors.primaryLight,
-                fontSize: 10,
-              ),
-            ),
+           
           ],
         ),
       ),

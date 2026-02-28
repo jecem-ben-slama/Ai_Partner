@@ -1,6 +1,7 @@
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
+import 'package:ai_partner/presentation/screens/tts_player_page.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,6 @@ class VisionResultCard extends StatelessWidget {
   final VisionResult result;
   const VisionResultCard({super.key, required this.result});
 
-  // Helper to detect phone numbers in plain text scans
   bool _isProbablyPhone(String input) {
     final cleanInput = input.replaceAll(RegExp(r'[\s\-\(\)]'), '');
     return RegExp(r'^\+?[0-9]{7,15}$').hasMatch(cleanInput);
@@ -46,7 +46,6 @@ class VisionResultCard extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.white70,
-
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -91,9 +90,22 @@ class VisionResultCard extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
+                      // TTS BUTTON
+                      // Inside VisionResultCard Row children:
+                      ActionButton(
+                        icon: Icons.record_voice_over_rounded,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TtsPlayerPage(text: result.content),
+                            ),
+                          );
+                        },
+                      ),
                       ActionButton(
                         icon: Icons.copy,
-                        label: "Copy",
                         onTap: () {
                           Clipboard.setData(
                             ClipboardData(text: result.content),
@@ -103,7 +115,6 @@ class VisionResultCard extends StatelessWidget {
                       ),
                       ActionButton(
                         icon: Icons.bookmark_border,
-                        label: "Save",
                         onTap: () {
                           context.read<HistoryCubit>().saveNewScan([result]);
                           _showFloatingSnack(context, "Saved!");
@@ -111,34 +122,26 @@ class VisionResultCard extends StatelessWidget {
                       ),
                       ActionButton(
                         icon: Icons.share_outlined,
-                        label: "Share",
                         // ignore: deprecated_member_use
                         onTap: () => Share.share(result.content),
                       ),
-
-                      // CALL BUTTON LOGIC
                       if (showCallAction)
                         ActionButton(
                           icon: Icons.call,
-                          label: "Call",
                           onTap: () => _launch(
                             "tel:${result.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
                           ),
                         ),
-
                       if (result.type == VisionType.url)
                         ActionButton(
                           icon: Icons.open_in_browser,
-                          label: "Open",
                           onTap: () => _launch(result.content),
                         ),
-
                       if (result.type == VisionType.text ||
                           result.type == VisionType.barcode ||
                           result.type == VisionType.qr)
                         ActionButton(
                           icon: Icons.g_translate_rounded,
-                          label: "Translate",
                           onTap: () {
                             Navigator.push(
                               context,
@@ -162,7 +165,7 @@ class VisionResultCard extends StatelessWidget {
   }
 
   IconData _getIcon(bool isPhone) {
-    if (isPhone) return Icons.phone; // Prioritize phone icon if detected
+    if (isPhone) return Icons.phone;
     switch (result.type) {
       case VisionType.text:
         return Icons.text_fields;

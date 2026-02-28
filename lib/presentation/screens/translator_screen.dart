@@ -2,6 +2,7 @@ import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_state.dart';
+import 'package:ai_partner/presentation/screens/tts_player_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,29 +40,33 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       _targetLang = temp;
     });
   }
-String _getLocalizedLanguageName(
+
+  String _getLocalizedLanguageName(
     BuildContext context,
     TranslateLanguage lang,
   ) {
-    // Use a switch to map ML Kit Enums to your translations
     switch (lang) {
       case TranslateLanguage.french:
-        return "Français"; // Or use AppLocalizations.of(context)!.french
+        return "Français";
       case TranslateLanguage.arabic:
-        return "العربية"; // Or use AppLocalizations.of(context)!.arabic
+        return "العربية";
       case TranslateLanguage.english:
         return "English";
       case TranslateLanguage.spanish:
         return "Español";
       default:
-        // Fallback to the Enum name if not manually mapped
         return lang.name.toUpperCase();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.translationLabel),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -132,7 +137,6 @@ String _getLocalizedLanguageName(
       value: current,
       isExpanded: true,
       underline: const SizedBox(),
-
       dropdownColor: Theme.of(context).brightness == Brightness.light
           ? Colors.white
           : AppColors.surfaceDark,
@@ -143,11 +147,11 @@ String _getLocalizedLanguageName(
         fontSize: 14,
       ),
       items: TranslateLanguage.values.map((lang) {
-  return DropdownMenuItem(
-    value: lang,
-    child: Text(_getLocalizedLanguageName(context, lang)), // Localized call
-  );
-}).toList(),
+        return DropdownMenuItem(
+          value: lang,
+          child: Text(_getLocalizedLanguageName(context, lang)),
+        );
+      }).toList(),
       onChanged: onChanged,
     );
   }
@@ -165,13 +169,18 @@ String _getLocalizedLanguageName(
       child: TextField(
         controller: _textController,
         maxLines: 6,
-        style: TextStyle(color: Colors.black, fontSize: 16),
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.light
+              ? Colors.black
+              : Colors.white,
+          fontSize: 16,
+        ),
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.translationHint,
           hintStyle: TextStyle(
             color: Theme.of(context).brightness == Brightness.light
-                ? Colors.black
-                : Colors.white,
+                ? Colors.black54
+                : Colors.white60,
           ),
           border: InputBorder.none,
         ),
@@ -208,7 +217,7 @@ String _getLocalizedLanguageName(
                 ? const CircularProgressIndicator(color: Colors.white)
                 : Text(
                     AppLocalizations.of(context)!.translationLabel,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
           ),
         );
@@ -242,9 +251,29 @@ String _getLocalizedLanguageName(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (state is TranslationSuccess)
+                  if (state is TranslationSuccess) ...[
+                    // Listen Button
+                    IconButton(
+                      icon: Icon(
+                        Icons.volume_up_rounded,
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.black
+                            : Colors.white,
+                      ),
+                      tooltip: "Speak translation",
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TtsPlayerPage(text: state.translatedText),
+                          ),
+                        );
+                      },
+                    ),
+                    // Copy Button
                     IconButton(
                       icon: Icon(
                         Icons.copy,
@@ -262,6 +291,7 @@ String _getLocalizedLanguageName(
                         );
                       },
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 10),
@@ -270,7 +300,9 @@ String _getLocalizedLanguageName(
                 style: TextStyle(
                   color: state is TranslationError
                       ? Colors.redAccent
-                      : Colors.greenAccent,
+                      : (Theme.of(context).brightness == Brightness.light
+                            ? Colors.black
+                            : Colors.greenAccent),
                   fontSize: 18,
                 ),
               ),

@@ -1,5 +1,7 @@
 //* Package imports
+import 'package:ai_partner/logic/cubit/tts/tts_cubit.dart';
 import 'package:ai_partner/logic/services/settings_service.dart';
+import 'package:ai_partner/logic/services/tts_service.dart'; // Ensure this is imported
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,15 +24,31 @@ import 'logic/cubit/settings/settings_state.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  runApp(MyApp(prefs: prefs));
+
+  // Initialize Services
+  final settingsService = SettingsService(prefs);
+  final ttsService = TtsService(); // Initialize the TTS Service here
+
+  runApp(
+    MyApp(
+      prefs: prefs,
+      settingsService: settingsService,
+      ttsService: ttsService,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
   final SettingsService settingsService;
+  final TtsService ttsService; // Added TTS Service field
 
-  MyApp({super.key, required this.prefs})
-    : settingsService = SettingsService(prefs);
+  const MyApp({
+    super.key,
+    required this.prefs,
+    required this.settingsService,
+    required this.ttsService, // Added to constructor
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +62,11 @@ class MyApp extends StatelessWidget {
           create: (context) => HistoryCubit(StorageService())..loadHistory(),
         ),
         BlocProvider(create: (context) => TranslationCubit()),
+        // FIXED: Now passing the ttsService instance correctly
+        BlocProvider(create: (context) => TtsCubit(ttsService)),
       ],
-      child: SafeArea(child: const AppView()),
+      child:
+          const AppView(), // Removed SafeArea from here, usually better inside AppView or Screens
     );
   }
 }
@@ -59,14 +80,11 @@ class AppView extends StatelessWidget {
       builder: (context, state) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-
-          //* Theme Management
-          //? Light Theme
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
             scaffoldBackgroundColor: AppColors.backgroundLight,
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.primaryLight,
               onPrimary: AppColors.onPrimaryLight,
               secondary: AppColors.secondaryLight,
@@ -81,12 +99,11 @@ class AppView extends StatelessWidget {
               centerTitle: true,
             ),
           ),
-          //? Dark Theme
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
             scaffoldBackgroundColor: AppColors.backgroundDark,
-            colorScheme: ColorScheme.dark(
+            colorScheme: const ColorScheme.dark(
               primary: AppColors.primaryLight,
               onPrimary: AppColors.onPrimaryDark,
               secondary: AppColors.secondaryDark,
@@ -103,12 +120,9 @@ class AppView extends StatelessWidget {
             ),
           ),
           themeMode: state.themeMode,
-
-          //* Localization Management
           locale: state.locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          //* Index Page
           home: state.showOnboarding
               ? const OnboardingScreen()
               : const NavbarScreen(),

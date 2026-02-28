@@ -48,10 +48,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
-  String get textExtraction => 'Text extraction from image/QR Code';
+  String get textExtraction => 'Text Extraction';
 
   @override
-  String get textExtractionLabel => 'Upload an image to identify text or QR codes';
+  String get textExtractionLabel =>
+      'Upload an image to identify text or QR codes';
 
   @override
   String get textTranslation => 'Text Translation';
@@ -70,4 +71,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectZoneLabel => 'Select Zone';
+
+  @override
+  String get clearHistoryTitle => 'Clear Saved?';
+
+  @override
+  String get clearHistoryMessage =>
+      'This will permanently delete all saved scans.';
 }

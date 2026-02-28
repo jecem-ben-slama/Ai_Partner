@@ -25,10 +25,22 @@ class SettingsScreen extends StatelessWidget {
                 SettingsSwitchWidget(
                   title: l10n.darkMode,
                   icon: Icons.dark_mode,
-                  trailing: Switch(
-                    value: state.themeMode == ThemeMode.dark,
-                    onChanged: (value) =>
-                        context.read<SettingsCubit>().toggleTheme(),
+                  trailing: Transform.scale(
+                    scale: 0.9,
+                    child: Switch(
+                      padding: EdgeInsets.all(20),
+                      thumbColor: WidgetStateProperty.resolveWith<Color?>((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.white; // Blue when ON
+                        }
+                        return Colors.black; // White when OFF
+                      }),
+                      value: state.themeMode == ThemeMode.dark,
+                      onChanged: (value) =>
+                          context.read<SettingsCubit>().toggleTheme(),
+                    ),
                   ),
                 ),
                 const Divider(),

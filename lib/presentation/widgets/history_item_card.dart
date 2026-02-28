@@ -84,9 +84,7 @@ class HistoryItemCard extends StatelessWidget {
                           Text(
                             res.label ?? "Result",
                             style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withOpacity(0.7),
+                              color: Theme.of(context).colorScheme.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -103,9 +101,7 @@ class HistoryItemCard extends StatelessWidget {
                           const SizedBox(height: 12),
                           _buildActionRow(context, sheetContext, res),
                           Divider(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.outlineVariant.withOpacity(0.2),
+                            color: Theme.of(context).colorScheme.outlineVariant,
                             height: 30,
                           ),
                         ],
@@ -135,7 +131,6 @@ class HistoryItemCard extends StatelessWidget {
         children: [
           ActionButton(
             icon: Icons.copy,
-            label: "Copy",
             onTap: () {
               Clipboard.setData(ClipboardData(text: res.content));
               Navigator.pop(sheetContext);
@@ -147,7 +142,6 @@ class HistoryItemCard extends StatelessWidget {
           if (showCallAction)
             ActionButton(
               icon: Icons.call,
-              label: "Call",
               onTap: () => _launch(
                 "tel:${res.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
               ),
@@ -158,7 +152,6 @@ class HistoryItemCard extends StatelessWidget {
               res.type == VisionType.qr)
             ActionButton(
               icon: Icons.g_translate_rounded,
-              label: "Translate",
               onTap: () {
                 Navigator.pop(sheetContext);
                 Navigator.push(
@@ -174,19 +167,17 @@ class HistoryItemCard extends StatelessWidget {
           if (res.type == VisionType.url)
             ActionButton(
               icon: Icons.open_in_browser,
-              label: "Open",
               onTap: () => _launch(res.content),
             ),
 
           ActionButton(
             icon: Icons.share_outlined,
-            label: "Share",
+            // ignore: deprecated_member_use
             onTap: () => Share.share(res.content),
           ),
 
           ActionButton(
             icon: Icons.delete_outline,
-            label: "Remove",
             onTap: () {
               Navigator.pop(sheetContext);
               _showDeleteConfirm(context);

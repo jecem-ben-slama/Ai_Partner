@@ -15,9 +15,13 @@
   "textExtraction": "Extraction de texte à partir d'une image/Code QR",
   "textExtractionLabel": "Téléchargez une image pour identifier du texte ou des codes QR",
   "textTranslation": "Traduction de texte",
+  "textExtraction":"Extraction de texte",
   "galleryLabel": "Galerie",
   "cameraLabel": "Appareil photo",
   "translationLabel": "Traduire",
-  "selectZoneLabel": "Choisir une zone"
+  "translationHint": "Saisissez ou collez du texte ici",
+  "selectZoneLabel": "Choisir une zone",
+  "clearHistoryTitle": "Effacer les éléments enregistrés ?",
+  "clearHistoryMessage": "Cela supprimera définitivement tous les scans enregistrés."
 
 }

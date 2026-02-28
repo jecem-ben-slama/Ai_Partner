@@ -11,7 +11,7 @@ class LanguageModel {
 
   static const List<LanguageModel> languages = [
     LanguageModel(code: 'fr', name: 'Français', flag: '🇫🇷'),
-    LanguageModel(code: 'en', name: 'English', flag: '🇺🇸'),
-    LanguageModel(code: 'ar', name: 'العربية', flag: '🇹🇳'),
+    LanguageModel(code: 'en', name: 'English', flag: '🇬🇧'),
+    LanguageModel(code: 'ar', name: 'العربية', flag: '🇸🇦'),
   ];
 }

@@ -15,9 +15,13 @@
   "textExtraction": "استخراج النص من الصور أو رمز الاستجابة السريعة (QR)",
   "textExtractionLabel": "ارفع صورة لتحديد النصوص أو رموز QR",
   "textTranslation": "ترجمة النصوص",
+  "textExtraction":"استخراج النص",
   "galleryLabel": "المعرض",
   "cameraLabel": "الكاميرا",
   "translationLabel": "ترجمة",
   "translationHint": "اكتب أو الصق النص هنا",
-  "selectZoneLabel": "تحديد المنطقة"
+  "selectZoneLabel": "تحديد المنطقة",
+  "clearHistoryTitle": "مسح المحفوظات؟",
+  "clearHistoryMessage": "سيؤدي هذا إلى حذف جميع المحفوظة نهائيًا."
+
 }

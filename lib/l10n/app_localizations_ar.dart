@@ -48,7 +48,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get confirm => 'تأكيد';
 
   @override
-  String get textExtraction => 'استخراج النص من الصور أو رمز الاستجابة السريعة (QR)';
+  String get textExtraction => 'استخراج النص';
 
   @override
   String get textExtractionLabel => 'ارفع صورة لتحديد النصوص أو رموز QR';
@@ -70,4 +70,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get selectZoneLabel => 'تحديد المنطقة';
+
+  @override
+  String get clearHistoryTitle => 'مسح المحفوظات؟';
+
+  @override
+  String get clearHistoryMessage => 'سيؤدي هذا إلى حذف جميع المحفوظة نهائيًا.';
 }

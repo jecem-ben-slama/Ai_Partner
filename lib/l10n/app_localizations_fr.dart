@@ -48,10 +48,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get confirm => 'Confirmer';
 
   @override
-  String get textExtraction => 'Extraction de texte à partir d\'une image/Code QR';
+  String get textExtraction => 'Extraction de texte';
 
   @override
-  String get textExtractionLabel => 'Téléchargez une image pour identifier du texte ou des codes QR';
+  String get textExtractionLabel =>
+      'Téléchargez une image pour identifier du texte ou des codes QR';
 
   @override
   String get textTranslation => 'Traduction de texte';
@@ -66,8 +67,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get translationLabel => 'Traduire';
 
   @override
-  String get translationHint => 'Type or paste text here';
+  String get translationHint => 'Saisissez ou collez du texte ici';
 
   @override
   String get selectZoneLabel => 'Choisir une zone';
+
+  @override
+  String get clearHistoryTitle => 'Effacer les éléments enregistrés ?';
+
+  @override
+  String get clearHistoryMessage =>
+      'Cela supprimera définitivement tous les scans enregistrés.';
 }
