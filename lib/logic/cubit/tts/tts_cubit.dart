@@ -24,14 +24,18 @@ class TtsCubit extends Cubit<TtsState> {
   }
 
   /// The main method called by your UI "Play" button
-  Future<void> detectAndSpeak(String text) async {
+  /// The main method called by your UI "Play" button
+  Future<void> detectAndSpeak(
+    String text, {
+    String? defaultErrorMessage,
+  }) async {
     if (text.trim().isEmpty) return;
 
-    // 1. Enter Loading state to trigger UI spinner/disable buttons
+    // 1. Enter Loading state
     emit(state.copyWith(status: TtsStatus.loading, errorMessage: ''));
 
     try {
-      // 2. Identify the language code (e.g., 'en', 'fr', 'ar')
+      // 2. Identify the language code
       final String languageCode = await _languageIdentifier.identifyLanguage(
         text,
       );
@@ -55,16 +59,18 @@ class TtsCubit extends Cubit<TtsState> {
 
       // 5. Configure engine and speak
       if (languageCode != 'und') {
+        // FIXED: Removed "bool isSupported =" because setLanguage returns void
         await _service.setLanguage(languageCode);
       }
 
       await _service.speak(text);
-      // Note: status changes to .playing via the onStart handler in the constructor
     } catch (e) {
+      // 6. Emit "Nice" error message
       emit(
         state.copyWith(
           status: TtsStatus.error,
-          errorMessage: "Failed to process text: ${e.toString()}",
+          errorMessage:
+              defaultErrorMessage ?? "Could not play audio. Please try again.",
         ),
       );
     }
@@ -80,11 +86,10 @@ class TtsCubit extends Cubit<TtsState> {
     emit(state.copyWith(speed: speed));
   }
 
-  // inside TtsCubit
   @override
   Future<void> close() async {
-    await _service.stop(); // Stop audio immediately
-    await _languageIdentifier.close(); // Close ML Kit
+    await _service.stop();
+    await _languageIdentifier.close();
     return super.close();
   }
 }

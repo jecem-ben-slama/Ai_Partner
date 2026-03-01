@@ -9,30 +9,28 @@ class VisionCubit extends Cubit<VisionState> {
 
   VisionCubit(this._scannerService) : super(VisionInitial());
 
-  Future<void> scanImage(File imageFile) async {
+  // Add parameters for the messages
+  Future<void> scanImage({
+    required File imageFile,
+    required String emptyMessage,
+    required String errorMessage,
+  }) async {
     emit(VisionLoading());
 
     try {
-      // The service now handles all the mapping to VisionResult
       final List<VisionResult> results = await _scannerService.processUniversal(
         imageFile,
       );
 
       if (results.isEmpty) {
-        emit(
-           VisionError(
-            "No text or barcodes detected. Try a clearer photo.",
-          ),
-        );
+        emit(VisionError(emptyMessage));
       } else {
-        // Emit the unified results list to the UI
         emit(VisionSuccess(results: results));
       }
     } catch (e) {
-      emit(VisionError("AI failed to process image: ${e.toString()}"));
+      emit(VisionError("$errorMessage ${e.toString()}"));
     }
   }
 
-  // Reset for a new scan session
   void reset() => emit(VisionInitial());
 }

@@ -1,7 +1,4 @@
 //* Package imports
-import 'package:ai_partner/logic/cubit/tts/tts_cubit.dart';
-import 'package:ai_partner/logic/services/settings_service.dart';
-import 'package:ai_partner/logic/services/tts_service.dart'; // Ensure this is imported
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,26 +6,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_partner/l10n/app_localizations.dart';
 //* Service imports
 import 'package:ai_partner/logic/services/universal_scanner_service.dart';
+import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:ai_partner/logic/services/storage_service.dart';
+import 'package:ai_partner/logic/services/tts_service.dart'; 
 //* Themes & UI imports
 import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 //* Cubit imports
-import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
+import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
+import 'package:ai_partner/logic/cubit/tts/tts_cubit.dart';
 import 'logic/cubit/settings/settings_cubit.dart';
 import 'logic/cubit/settings/settings_state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  // Initialize Services
   final settingsService = SettingsService(prefs);
-  final ttsService = TtsService(); // Initialize the TTS Service here
-
+  final ttsService = TtsService();
   runApp(
     MyApp(
       prefs: prefs,
@@ -41,13 +38,12 @@ void main() async {
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
   final SettingsService settingsService;
-  final TtsService ttsService; // Added TTS Service field
-
+  final TtsService ttsService;
   const MyApp({
     super.key,
     required this.prefs,
     required this.settingsService,
-    required this.ttsService, // Added to constructor
+    required this.ttsService, 
   });
 
   @override
@@ -62,13 +58,11 @@ class MyApp extends StatelessWidget {
           create: (context) => HistoryCubit(StorageService())..loadHistory(),
         ),
         BlocProvider(create: (context) => TranslationCubit()),
-        // FIXED: Now passing the ttsService instance correctly
         BlocProvider(create: (context) => TtsCubit(ttsService)),
       ],
       child: SafeArea(
         child: const AppView(),
-      ), // Removed SafeArea from here, usually better inside AppView or Screens
-    );
+        ),    );
   }
 }
 

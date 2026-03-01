@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'AI Assistant'**
+  /// **'AI Partner'**
   String get appTitle;
 
   /// No description provided for @settings.
@@ -214,11 +214,11 @@ abstract class AppLocalizations {
   /// **'Translate'**
   String get translationLabel;
 
-  /// No description provided for @translationHint.
+  /// No description provided for @textHint.
   ///
   /// In en, this message translates to:
   /// **'Type or paste text here'**
-  String get translationHint;
+  String get textHint;
 
   /// No description provided for @selectZoneLabel.
   ///
@@ -237,6 +237,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This will permanently delete all saved scans.'**
   String get clearHistoryMessage;
+
+  /// No description provided for @ttsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Text To Speech'**
+  String get ttsLabel;
+
+  /// No description provided for @speedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get speedLabel;
+
+  /// No description provided for @detectedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected'**
+  String get detectedLabel;
+
+  /// No description provided for @searchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search saved items'**
+  String get searchLabel;
+
+  /// No description provided for @allscansLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All scans'**
+  String get allscansLabel;
+
+  /// No description provided for @favoritesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favoritesLabel;
+
+  /// No description provided for @translatetoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate to'**
+  String get translatetoLabel;
+
+  /// No description provided for @picktarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a target language'**
+  String get picktarget;
+
+  /// No description provided for @copiedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copiedLabel;
+
+  /// No description provided for @saveitemLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Item'**
+  String get saveitemLabel;
+
+  /// No description provided for @clearscanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Saved?'**
+  String get clearscanTitle;
+
+  /// No description provided for @clearscanMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete this saved scans.'**
+  String get clearscanMessage;
+
+  /// No description provided for @nameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameLabel;
+
+  /// No description provided for @detailsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get detailsLabel;
+
+  /// No description provided for @welcomeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to your AI Partner'**
+  String get welcomeText;
+
+  /// No description provided for @genericerrorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Something Went Wrong!'**
+  String get genericerrorLabel;
+
+  /// No description provided for @renameScanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameScanLabel;
+
+  /// No description provided for @emptyVision.
+  ///
+  /// In en, this message translates to:
+  /// **'No text or barcodes detected. Try a clearer photo.'**
+  String get emptyVision;
+
+  /// No description provided for @visionError.
+  ///
+  /// In en, this message translates to:
+  /// **'AI failed to process image:'**
+  String get visionError;
+
+  /// No description provided for @nothingFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing Found'**
+  String get nothingFound;
+
+  /// No description provided for @noData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data found in image.'**
+  String get noData;
+
+  /// No description provided for @analysingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing Image...'**
+  String get analysingLabel;
+
+  /// No description provided for @loadHistoryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load history.'**
+  String get loadHistoryError;
+
+  /// No description provided for @saveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save.'**
+  String get saveError;
+
+  /// No description provided for @deleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed.'**
+  String get deleteError;
+
+  /// No description provided for @clearHistoryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear history.'**
+  String get clearHistoryError;
+
+  /// No description provided for @identifyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not identify language.'**
+  String get identifyError;
+
+  /// No description provided for @translationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to translate.'**
+  String get translationError;
+
+  /// No description provided for @translatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating...'**
+  String get translatingLabel;
+
+  /// No description provided for @downloadingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloadingLabel;
 }
 
 class _AppLocalizationsDelegate

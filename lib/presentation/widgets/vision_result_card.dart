@@ -1,5 +1,6 @@
+import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
-import 'package:ai_partner/logic/cubit/storage/history_state.dart'; // Ensure state is imported
+import 'package:ai_partner/logic/cubit/storage/history_state.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';
@@ -26,7 +27,10 @@ class VisionResultCard extends StatelessWidget {
     }
   }
 
+  //! to be reused for rename dialog
   void _showSaveDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     final TextEditingController nameController = TextEditingController(
       text: result.label ?? result.type.name.toUpperCase(),
     );
@@ -36,7 +40,7 @@ class VisionResultCard extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
-          "Save Item",
+          l10n.saveitemLabel,
           style: TextStyle(
             color: Theme.of(context).colorScheme.brightness == Brightness.light
                 ? Colors.black
@@ -47,13 +51,13 @@ class VisionResultCard extends StatelessWidget {
           controller: nameController,
           autofocus: true,
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-          decoration: const InputDecoration(labelText: "Item Name"),
+          decoration: InputDecoration(labelText: l10n.nameLabel),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
-              "Cancel",
+              l10n.cancel,
               style: TextStyle(
                 color:
                     Theme.of(context).colorScheme.brightness == Brightness.light
@@ -67,12 +71,12 @@ class VisionResultCard extends StatelessWidget {
               final String customName = nameController.text.trim();
               if (customName.isNotEmpty) {
                 final updatedResult = result.copyWith(label: customName);
-                context.read<HistoryCubit>().saveNewScan([updatedResult]);
+                context.read<HistoryCubit>().saveNewScan([updatedResult],errorMessage: l10n.saveError);
                 Navigator.pop(dialogContext);
               }
             },
             child: Text(
-              "Save",
+              l10n.confirm,
               style: TextStyle(
                 color:
                     Theme.of(context).colorScheme.brightness == Brightness.light
@@ -129,6 +133,7 @@ class VisionResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bool isPhone =
         result.type == VisionType.phone || _isProbablyPhone(result.content);
     final bool isUrl = result.type == VisionType.url;
@@ -209,7 +214,7 @@ class VisionResultCard extends StatelessWidget {
                               Clipboard.setData(
                                 ClipboardData(text: result.content),
                               );
-                              _showTopNotification(context, "copied");
+                              _showTopNotification(context, l10n.copiedLabel);
                             },
                           ),
 
@@ -226,6 +231,7 @@ class VisionResultCard extends StatelessWidget {
                                 // Unsave logic
                                 context.read<HistoryCubit>().deleteItem(
                                   result.id,
+                                  errorMessage: l10n.deleteError
                                 );
                               } else {
                                 // Save logic

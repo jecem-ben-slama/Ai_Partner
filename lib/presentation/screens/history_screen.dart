@@ -31,10 +31,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_sweep_outlined),
+            icon: const Icon(
+              Icons.delete_sweep_outlined,
+              color: Colors.redAccent,
+            ),
             onPressed: () => _showDeleteConfirm(context, l10n),
           ),
         ],
@@ -42,7 +44,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       body: Column(
         children: [
           _buildSearchBar(l10n),
-          _buildFilterTabs(),
+          _buildFilterTabs(l10n),
           const SizedBox(height: 8),
           Expanded(
             child: BlocBuilder<HistoryCubit, HistoryState>(
@@ -52,8 +54,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 }
 
                 if (state is HistoryLoaded) {
+                  if (state.savedScans.isEmpty) {
+                    return _buildEmptyState(l10n);
+                  }
+
+                  // Efficiently filter results
                   final filteredScans = state.savedScans.where((scan) {
-                    final results = scan['results'] as List;
+                    final results = scan['results'] as List? ?? [];
                     final firstResult = results.isNotEmpty ? results.first : {};
 
                     final bool isFav = firstResult['isFavorite'] == true;
@@ -71,39 +78,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     return matchesFavoriteFilter && matchesSearch;
                   }).toList();
 
-                  if (state.savedScans.isEmpty) {
-                    return _buildEmptyState(l10n);
-                  }
-
                   if (filteredScans.isEmpty) {
-                    return _buildNoResultsState();
+                    return _buildNoResultsState(l10n);
                   }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      top: 8,
-                      bottom: 80,
-                    ),
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                     itemCount: filteredScans.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final scan = filteredScans[index];
-                      return Padding(
+                      return HistoryItemCard(
                         key: ValueKey(scan['id']),
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Column(
-                          children: [
-                            HistoryItemCard(scan: scan),
-                            const Divider(),
-                          ],
-                        ),
+                        scan: scan,
                       );
                     },
                   );
                 }
 
-                return const Center(child: Text("Unable to load history"));
+                return Center(child: Text(l10n.loadHistoryError));
               },
             ),
           ),
@@ -119,11 +113,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
         controller: _searchController,
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
-          hintText: "Search saved items...",
-          prefixIcon: const Icon(Icons.search, size: 20),
+          hintText: l10n.searchLabel,
+          prefixIcon: const Icon(Icons.search, size: 22),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, size: 20),
+                  icon: const Icon(Icons.clear_rounded, size: 20),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _searchQuery = "");
@@ -131,43 +125,50 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 )
               : null,
           filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
-          contentPadding: EdgeInsets.zero,
+          fillColor: Theme.of(context).colorScheme.surface,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(25),
             borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25),
+            borderSide: BorderSide(color: Theme.of(context).dividerColor),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterTabs() {
+  Widget _buildFilterTabs(AppLocalizations l10n) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          _filterTile(
-            label: "All Scans",
-            icon: Icons.list_alt_rounded,
-            isActive: !_showOnlyFavorites,
-            onTap: () => setState(() => _showOnlyFavorites = false),
-          ),
-          const SizedBox(width: 12),
-          _filterTile(
-            label: "Favorites",
-            icon: Icons.favorite_rounded,
-            isActive: _showOnlyFavorites,
-            onTap: () => setState(() => _showOnlyFavorites = true),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          children: [
+            _filterTile(
+              label: l10n.allscansLabel,
+              isActive: !_showOnlyFavorites,
+              onTap: () => setState(() => _showOnlyFavorites = false),
+            ),
+            _filterTile(
+              label: l10n.favoritesLabel,
+              isActive: _showOnlyFavorites,
+              onTap: () => setState(() => _showOnlyFavorites = true),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _filterTile({
     required String label,
-    required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
   }) {
@@ -176,39 +177,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isActive ? colorScheme.primary : Colors.grey,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary,
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
+            color: isActive ? colorScheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(25),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isActive ? colorScheme.onPrimary : Colors.white54,
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: isActive ? colorScheme.onPrimary : Colors.grey,
               ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: isActive ? colorScheme.onPrimary : Colors.white54,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -220,32 +203,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.history_outlined, size: 64, color: Colors.white24),
+          Icon(
+            Icons.auto_awesome_motion_outlined,
+            size: 64,
+            color: Colors.grey,
+          ),
           const SizedBox(height: 16),
-          const Text(
-            "No saved scans yet",
-            style: TextStyle(color: Colors.white54),
+          Text(
+            l10n.nothingFound,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNoResultsState() {
+  Widget _buildNoResultsState(AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            _showOnlyFavorites ? Icons.heart_broken_outlined : Icons.search_off,
-            size: 48,
-            color: Colors.white10,
-          ),
+          const Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text(
-            "No matches found",
-            style: TextStyle(color: Colors.white38),
-          ),
+          Text(l10n.nothingFound, style: const TextStyle(color: Colors.grey)),
         ],
       ),
     );
@@ -255,21 +238,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(l10n.clearHistoryTitle),
         content: Text(l10n.clearHistoryMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(color: Colors.grey),
+            ),
           ),
           TextButton(
             onPressed: () {
-              context.read<HistoryCubit>().clearAll();
+              context.read<HistoryCubit>().clearAll(
+                errorMessage: l10n.clearHistoryError,
+              );
               Navigator.pop(dialogContext);
             },
             child: Text(
               l10n.confirm,
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

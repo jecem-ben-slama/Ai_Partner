@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'AI Assistant';
+  String get appTitle => 'AI Partner';
 
   @override
   String get settings => 'Settings';
@@ -67,7 +67,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get translationLabel => 'Translate';
 
   @override
-  String get translationHint => 'Type or paste text here';
+  String get textHint => 'Type or paste text here';
 
   @override
   String get selectZoneLabel => 'Select Zone';
@@ -78,4 +78,96 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get clearHistoryMessage =>
       'This will permanently delete all saved scans.';
+
+  @override
+  String get ttsLabel => 'Text To Speech';
+
+  @override
+  String get speedLabel => 'Speed';
+
+  @override
+  String get detectedLabel => 'Detected';
+
+  @override
+  String get searchLabel => 'Search saved items';
+
+  @override
+  String get allscansLabel => 'All scans';
+
+  @override
+  String get favoritesLabel => 'Favorites';
+
+  @override
+  String get translatetoLabel => 'Translate to';
+
+  @override
+  String get picktarget => 'Pick a target language';
+
+  @override
+  String get copiedLabel => 'Copied';
+
+  @override
+  String get saveitemLabel => 'Save Item';
+
+  @override
+  String get clearscanTitle => 'Clear Saved?';
+
+  @override
+  String get clearscanMessage =>
+      'This will permanently delete this saved scans.';
+
+  @override
+  String get nameLabel => 'Name';
+
+  @override
+  String get detailsLabel => 'Details';
+
+  @override
+  String get welcomeText => 'Welcome to your AI Partner';
+
+  @override
+  String get genericerrorLabel => 'Something Went Wrong!';
+
+  @override
+  String get renameScanLabel => 'Rename';
+
+  @override
+  String get emptyVision =>
+      'No text or barcodes detected. Try a clearer photo.';
+
+  @override
+  String get visionError => 'AI failed to process image:';
+
+  @override
+  String get nothingFound => 'Nothing Found';
+
+  @override
+  String get noData => 'No data found in image.';
+
+  @override
+  String get analysingLabel => 'Analyzing Image...';
+
+  @override
+  String get loadHistoryError => 'Could not load history.';
+
+  @override
+  String get saveError => 'Failed to save.';
+
+  @override
+  String get deleteError => 'Delete failed.';
+
+  @override
+  String get clearHistoryError => 'Failed to clear history.';
+
+  @override
+  String get identifyError => 'Could not identify language.';
+
+  @override
+  String get translationError => 'Failed to translate.';
+
+  @override
+  String get translatingLabel => 'Translating...';
+
+  @override
+  String get downloadingLabel => 'Downloading';
 }

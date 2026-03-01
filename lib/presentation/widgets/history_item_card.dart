@@ -1,4 +1,4 @@
-import 'package:ai_partner/core/theme/app_colors.dart';
+import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
@@ -16,10 +16,152 @@ class HistoryItemCard extends StatelessWidget {
 
   const HistoryItemCard({super.key, required this.scan});
 
-  bool _isProbablyPhone(String input) {
-    final cleanInput = input.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    return RegExp(r'^\+?[0-9]{7,15}$').hasMatch(cleanInput);
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    // Data Parsing
+    final DateTime date = DateTime.parse(
+      scan['timestamp'] ?? DateTime.now().toString(),
+    );
+    final List<VisionResult> results = (scan['results'] as List? ?? [])
+        .map((r) => VisionResult.fromJson(r))
+        .toList();
+
+    if (results.isEmpty) return const SizedBox.shrink();
+
+    final firstRes = results.first;
+    final bool isFavorite = firstRes.isFavorite;
+
+    return Dismissible(
+      key: Key('dismiss_${scan['id']}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async => _showDeleteConfirm(context),
+      background: _buildDeleteBackground(),
+      child: Card(
+        elevation: 0,
+        margin: const EdgeInsets.only(bottom: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: theme.dividerColor),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showScanDetail(context, results, l10n),
+          onLongPress: () => _showRenameDialog(
+            context,
+            firstRes.label ?? "",
+            scan['id'],
+            l10n,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                _buildLeadingIcon(context, firstRes),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        firstRes.label ?? "Untitled",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        firstRes.content.replaceAll('\n', ' '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        DateFormat('MMM dd • HH:mm').format(date),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildTrailingActions(context, scan['id'], isFavorite),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
+
+  // --- Sub-Widgets for Clarity ---
+
+  Widget _buildLeadingIcon(BuildContext context, VisionResult res) {
+    IconData iconData = Icons.text_snippet_outlined;
+    if (res.type == VisionType.url) iconData = Icons.link_rounded;
+    if (res.type == VisionType.phone) iconData = Icons.phone_enabled_rounded;
+    if (res.type == VisionType.barcode) iconData = Icons.qr_code_rounded;
+
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        iconData,
+        color: Theme.of(context).colorScheme.primary,
+        size: 24,
+      ),
+    );
+  }
+
+  Widget _buildTrailingActions(BuildContext context, String id, bool isFav) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.read<HistoryCubit>().toggleFavorite(id);
+          },
+          icon: Icon(
+            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            color: isFav ? Colors.redAccent : Colors.grey,
+            size: 22,
+          ),
+        ),
+        const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 20),
+      ],
+    );
+  }
+
+  Widget _buildDeleteBackground() {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 20),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.redAccent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
+    );
+  }
+
+  // --- Utility Methods ---
 
   Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
@@ -28,143 +170,41 @@ class HistoryItemCard extends StatelessWidget {
     }
   }
 
-  void _showRenameDialog(
+  void _showScanDetail(
     BuildContext context,
-    String currentLabel,
-    String scanId,
+    List<VisionResult> results,
+    AppLocalizations l10n,
   ) {
-    final TextEditingController renameController = TextEditingController(
-      text: currentLabel,
-    );
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: const Text("Rename Scan"),
-        content: TextField(
-          controller: renameController,
-          autofocus: true,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-          decoration: InputDecoration(
-            hintText: "Enter new name",
-            filled: true,
-            fillColor: Colors.white10,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              "Cancel",
-              style: TextStyle(
-                color:
-                    Theme.of(context).colorScheme.brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              final newName = renameController.text.trim();
-              if (newName.isNotEmpty) {
-                context.read<HistoryCubit>().updateLabel(scanId, newName);
-              }
-              Navigator.pop(dialogContext);
-            },
-            child: Text(
-              "Save",
-              style: TextStyle(
-                color:
-                    Theme.of(context).colorScheme.brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showScanDetail(BuildContext context, List<VisionResult> results) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 15,
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 40,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollController) => Column(
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 25),
-            Text(
-              "History Detail",
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : AppColors.primaryLight,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                letterSpacing: 1.1,
-              ),
-            ),
-            const SizedBox(height: 15),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                children: results.map((res) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        res.label?.toUpperCase() ?? "RESULT",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      SelectableText(
-                        res.content,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionRow(context, sheetContext, res),
-                      Divider(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                        height: 30,
-                      ),
-                    ],
-                  );
-                }).toList(),
+            Expanded(
+              child: ListView.separated(
+                controller: scrollController,
+                padding: const EdgeInsets.all(24),
+                itemCount: results.length,
+                separatorBuilder: (_, _) => const Divider(height: 40),
+                itemBuilder: (ctx, i) =>
+                    _buildDetailItem(context, sheetContext, results[i], l10n),
               ),
             ),
           ],
@@ -173,221 +213,132 @@ class HistoryItemCard extends StatelessWidget {
     );
   }
 
+  Widget _buildDetailItem(
+    BuildContext context,
+    BuildContext sheetCtx,
+    VisionResult res,
+    AppLocalizations l10n,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          res.label?.toUpperCase() ?? "CONTENT",
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.1,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SelectableText(
+          res.content,
+          style: const TextStyle(fontSize: 16, height: 1.5),
+        ),
+        const SizedBox(height: 16),
+        _buildActionRow(context, sheetCtx, res, l10n),
+      ],
+    );
+  }
+
   Widget _buildActionRow(
     BuildContext context,
-    BuildContext sheetContext,
+    BuildContext sheetCtx,
     VisionResult res,
+    AppLocalizations l10n,
   ) {
-    // Logic for conditional visibility
-    final bool hasContent = res.content.trim().isNotEmpty;
-    final bool isPureText =
-        res.type == VisionType.text; // Strict check for text
-    final bool isPhone =
-        res.type == VisionType.phone || _isProbablyPhone(res.content);
+    final bool isText = res.type == VisionType.text;
     final bool isUrl =
         res.type == VisionType.url || res.content.startsWith('http');
+    final bool isPhone = res.type == VisionType.phone;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          // TTS - ONLY WHEN TEXT
-          if (hasContent && isPureText)
-            ActionButton(
-              icon: Icons.volume_up_rounded,
-              onTap: () {
-                Navigator.pop(sheetContext);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TtsPlayerPage(text: res.content),
-                  ),
-                );
-              },
-            ),
-
-          // RENAME
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        if (isText)
           ActionButton(
-            icon: Icons.edit_outlined,
+            icon: Icons.g_translate_rounded,
             onTap: () {
-              Navigator.pop(sheetContext);
-              _showRenameDialog(context, res.label ?? "", scan['id']);
+              Navigator.pop(sheetCtx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (c) => TranslatorScreen(initialText: res.content),
+                ),
+              );
             },
           ),
-
-          // COPY
-          if (hasContent)
-            ActionButton(
-              icon: Icons.copy,
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: res.content));
-                Navigator.pop(sheetContext);
-                _showTopNotification(context, "coped");
-              },
-            ),
-
-          // CALL
-          if (isPhone)
-            ActionButton(
-              icon: Icons.call,
-              onTap: () => _launch(
-                "tel:${res.content.replaceAll(RegExp(r'[^\d+]'), '')}",
-              ),
-            ),
-
-          // TRANSLATE - ONLY WHEN TEXT
-          if (hasContent && isPureText)
-            ActionButton(
-              icon: Icons.g_translate_rounded,
-              onTap: () {
-                Navigator.pop(sheetContext);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        TranslatorScreen(initialText: res.content),
-                  ),
-                );
-              },
-            ),
-
-          // OPEN BROWSER
-          if (isUrl)
-            ActionButton(
-              icon: Icons.open_in_browser,
-              onTap: () => _launch(res.content),
-            ),
-
-          // SHARE
-          if (hasContent)
-            ActionButton(
-              icon: Icons.share_outlined,
-              onTap: () => Share.share(res.content),
-            ),
-
-          // DELETE
+        if (isText)
           ActionButton(
-            icon: Icons.delete_outline,
+            icon: Icons.volume_up_rounded,
             onTap: () {
-              Navigator.pop(sheetContext);
-              _showDeleteConfirm(context);
+              Navigator.pop(sheetCtx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (c) => TtsPlayerPage(text: res.content),
+                ),
+              );
             },
+          ),
+        if (isUrl)
+          ActionButton(
+            icon: Icons.open_in_browser_rounded,
+            onTap: () => _launch(res.content),
+          ),
+        if (isPhone)
+          ActionButton(
+            icon: Icons.call_rounded,
+            onTap: () => _launch("tel:${res.content}"),
+          ),
+        ActionButton(
+          icon: Icons.copy_rounded,
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: res.content));
+            Navigator.pop(sheetCtx);
+            _showTopNotification(context, l10n.copiedLabel);
+          },
+        ),
+        ActionButton(
+          icon: Icons.share_rounded,
+          // ignore: deprecated_member_use
+          onTap: () => Share.share(res.content),
+        ),
+      ],
+    );
+  }
+
+  Future<bool> _showDeleteConfirm(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.clearscanTitle),
+        content: Text(l10n.clearscanMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<HistoryCubit>().deleteItem(
+                scan['id'],
+                errorMessage: l10n.deleteError,
+              );
+              Navigator.pop(ctx, true);
+            },
+            child: Text(
+              l10n.confirm,
+              style: const TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final DateTime date = DateTime.parse(scan['timestamp']);
-    final List<dynamic> rawResults = scan['results'] ?? [];
-    final List<VisionResult> results = rawResults
-        .map((r) => VisionResult.fromJson(r))
-        .toList();
-
-    final bool isFavorite = results.isNotEmpty && results.first.isFavorite;
-
-    final String itemTitle = results.isNotEmpty
-        ? (results.first.label ?? "Untitled Scan")
-        : "Empty Scan";
-
-    final String itemSubtitle = results.isNotEmpty
-        ? results.first.content.replaceAll('\n', ' ')
-        : "";
-
-    final bool firstIsPhone =
-        results.isNotEmpty && _isProbablyPhone(results.first.content);
-
-    final IconData previewIcon = firstIsPhone
-        ? Icons.phone
-        : (results.isNotEmpty && results.first.type == VisionType.text
-              ? Icons.text_snippet_outlined
-              : Icons.qr_code_2);
-
-    return Card(
-      color: Theme.of(context).colorScheme.surface,
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _showScanDetail(context, results),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              previewIcon,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          title: Text(
-            itemTitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (itemSubtitle.isNotEmpty)
-                Text(
-                  itemSubtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 13,
-                  ),
-                ),
-              const SizedBox(height: 4),
-              Text(
-                DateFormat('MMM dd • HH:mm').format(date),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 10,
-                ),
-              ),
-            ],
-          ),
-          trailing: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            children: [
-              IconButton(
-                onPressed: () {
-                  context.read<HistoryCubit>().toggleFavorite(scan['id']);
-                },
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite
-                      ? Colors.redAccent
-                      : Theme.of(context).colorScheme.outline,
-                  size: 22,
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.outline,
-                size: 14,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return result ?? false;
   }
 
   void _showTopNotification(BuildContext context, String message) {
@@ -409,7 +360,6 @@ class HistoryItemCard extends StatelessWidget {
               ],
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
                   Icons.check_circle,
@@ -424,34 +374,38 @@ class HistoryItemCard extends StatelessWidget {
         ),
       ),
     );
-
     overlay.insert(overlayEntry);
-
-    // Remove it after 2 seconds
     Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
   }
 
-  void _showDeleteConfirm(BuildContext context) {
+  void _showRenameDialog(
+    BuildContext context,
+    String currentLabel,
+    String scanId,
+    AppLocalizations l10n,
+  ) {
+    final controller = TextEditingController(text: currentLabel);
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: const Text("Remove Scan?"),
-        content: const Text("Delete this scan from history?"),
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.renameScanLabel),
+        content: TextField(controller: controller, autofocus: true),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Cancel"),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
-              context.read<HistoryCubit>().deleteItem(scan['id']);
-              Navigator.pop(dialogContext);
+              if (controller.text.trim().isNotEmpty) {
+                context.read<HistoryCubit>().updateLabel(
+                  scanId,
+                  controller.text.trim(),
+                );
+              }
+              Navigator.pop(ctx);
             },
-            child: const Text(
-              "Remove",
-              style: TextStyle(color: Colors.redAccent),
-            ),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
