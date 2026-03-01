@@ -10,7 +10,7 @@ import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:ai_partner/logic/services/tts_service.dart'; 
 //* Themes & UI imports
-import 'package:ai_partner/core/theme/app_colors.dart';
+import 'package:ai_partner/core/theme/app_theme.dart';
 import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 //* Cubit imports
@@ -75,47 +75,9 @@ class AppView extends StatelessWidget {
       builder: (context, state) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.light,
-            scaffoldBackgroundColor: AppColors.backgroundLight,
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primaryLight,
-              onPrimary: AppColors.onPrimaryLight,
-              secondary: AppColors.secondaryLight,
-              surface: AppColors.surfaceLight,
-              onSurface: AppColors.onSurfaceLight,
-              error: AppColors.error,
-              tertiary: AppColors.primaryLight,
-            ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: AppColors.backgroundLight,
-              elevation: 0,
-              centerTitle: true,
-            ),
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: AppColors.backgroundDark,
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primaryLight,
-              onPrimary: AppColors.onPrimaryDark,
-              secondary: AppColors.secondaryDark,
-              onSecondary: AppColors.onSecondaryDark,
-              surface: AppColors.surfaceDark,
-              onSurface: AppColors.onSurfaceDark,
-              tertiary: Color(0xFF161925),
-              error: AppColors.error,
-            ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: AppColors.backgroundDark,
-              elevation: 0,
-              centerTitle: true,
-            ),
-          ),
-          themeMode: state.themeMode,
-          locale: state.locale,
+         theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: state.themeMode, locale: state.locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: state.showOnboarding
