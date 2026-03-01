@@ -170,4 +170,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get downloadingLabel => 'Téléchargement...';
+
+  @override
+  String get appearanceLabel => 'Apparence';
+
+  @override
+  String get systemLabel => 'Système';
 }

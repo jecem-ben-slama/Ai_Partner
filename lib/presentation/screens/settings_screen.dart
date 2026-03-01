@@ -22,15 +22,13 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader("Appearance"),
-
-                //                _buildSectionHeader(l10n.appearanceLabel ?? "Appearance"),
+                _buildSectionHeader(l10n.appearanceLabel),
                 _buildSettingsGroup([
                   SettingsSwitchWidget(
                     title: l10n.darkMode,
                     icon: Icons.dark_mode_rounded,
                     trailing: Switch.adaptive(
-                      activeColor: Colors.blueAccent,
+                      activeThumbColor: Colors.blueAccent,
                       value: state.themeMode == ThemeMode.dark,
                       onChanged: (value) =>
                           context.read<SettingsCubit>().toggleTheme(),
@@ -42,8 +40,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ]),
                 const SizedBox(height: 25),
-                //  _buildSectionHeader(l10n.systemLabel ?? "System"),
-                _buildSectionHeader("System"),
+                _buildSectionHeader(l10n.systemLabel),
 
                 _buildSettingsGroup([
                   SettingsSwitchWidget(
@@ -189,12 +186,10 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
-            const SizedBox(width: 12),
-            Text(l10n.resetTitle),
-          ],
+        title: const Icon(
+          Icons.warning_amber_rounded,
+          color: Colors.orangeAccent,
+          size: 25,
         ),
         content: Text(l10n.resetWarning),
         actions: [

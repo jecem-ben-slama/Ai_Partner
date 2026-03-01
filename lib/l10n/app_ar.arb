@@ -51,5 +51,7 @@
   "identifyError": "تعذر تحديد اللغة.",
   "translationError": "فشلت الترجمة.",
   "translatingLabel": "جاري الترجمة...",
-  "downloadingLabel": "جاري تحميل حزمة"
+  "downloadingLabel": "جاري تحميل حزمة",
+  "appearanceLabel": "المظهر",
+"systemLabel": "النظام"
 }

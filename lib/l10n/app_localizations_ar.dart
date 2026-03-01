@@ -168,4 +168,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get downloadingLabel => 'جاري تحميل حزمة';
+
+  @override
+  String get appearanceLabel => 'المظهر';
+
+  @override
+  String get systemLabel => 'النظام';
 }

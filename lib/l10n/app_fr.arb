@@ -51,5 +51,7 @@
   "identifyError": "Impossible d'identifier la langue.",
   "translationError": "Échec de la traduction.",
   "translatingLabel": "Traduction en cours...",
-  "downloadingLabel": "Téléchargement..."
+  "downloadingLabel": "Téléchargement...",
+  "appearanceLabel": "Apparence",
+"systemLabel": "Système"
 }

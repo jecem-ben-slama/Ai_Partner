@@ -169,5 +169,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get translatingLabel => 'Translating...';
 
   @override
-  String get downloadingLabel => 'Downloading';
+  String get downloadingLabel => 'Downloading...';
+
+  @override
+  String get appearanceLabel => 'Appearance';
+
+  @override
+  String get systemLabel => 'System';
 }

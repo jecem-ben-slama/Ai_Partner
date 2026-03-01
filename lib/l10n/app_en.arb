@@ -52,7 +52,9 @@
   "identifyError": "Could not identify language.",
   "translationError": "Failed to translate.",
   "translatingLabel": "Translating...",
-  "downloadingLabel": "Downloading"
+  "downloadingLabel": "Downloading...",
+  "appearanceLabel": "Appearance",
+"systemLabel": "System"
 
 
 

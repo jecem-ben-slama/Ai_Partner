@@ -415,8 +415,20 @@ abstract class AppLocalizations {
   /// No description provided for @downloadingLabel.
   ///
   /// In en, this message translates to:
-  /// **'Downloading'**
+  /// **'Downloading...'**
   String get downloadingLabel;
+
+  /// No description provided for @appearanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceLabel;
+
+  /// No description provided for @systemLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get systemLabel;
 }
 
 class _AppLocalizationsDelegate
