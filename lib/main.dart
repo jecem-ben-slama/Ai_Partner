@@ -1,5 +1,6 @@
 //* Package imports
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,7 +28,7 @@ import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 void main() async {
   // Ensure native bindings are ready
   WidgetsFlutterBinding.ensureInitialized();
-
+await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Initialize SharedPreferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 

@@ -57,7 +57,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       SettingsState(
         themeMode: ThemeMode.light,
         locale: Locale('en'),
-        showOnboarding: false,
+        showOnboarding: true,
         hapticLevel: HapticIntensity.medium,
       ),
     );
