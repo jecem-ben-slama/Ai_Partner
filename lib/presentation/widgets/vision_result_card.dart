@@ -1,6 +1,6 @@
-import 'package:ai_partner/l10n/app_localizations.dart';
-import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
-import 'package:ai_partner/logic/cubit/storage/history_state.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_state.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
@@ -72,7 +72,7 @@ class VisionResultCard extends StatelessWidget {
               final String customName = nameController.text.trim();
               if (customName.isNotEmpty) {
                 final updatedResult = result.copyWith(label: customName);
-                context.read<HistoryCubit>().saveNewScan([
+                context.read<SavedScanCubit>().saveNewScan([
                   updatedResult,
                 ], errorMessage: l10n.saveError);
                 context.read<HapticService>().trigger;
@@ -147,11 +147,11 @@ class VisionResultCard extends StatelessWidget {
         result.type == VisionType.barcode ||
         result.type == VisionType.qr;
 
-    return BlocBuilder<HistoryCubit, HistoryState>(
+    return BlocBuilder<SavedScanCubit, SavedScanState>(
       builder: (context, state) {
         // 1. Check if this specific result ID is in the saved history
         bool isSaved = false;
-        if (state is HistoryLoaded) {
+        if (state is SavedScanLoaded) {
           isSaved = state.savedScans.any((scan) => scan['id'] == result.id);
         }
 
@@ -236,7 +236,7 @@ class VisionResultCard extends StatelessWidget {
                             onTap: () {
                               if (isSaved) {
                                 // Unsave logic
-                                context.read<HistoryCubit>().deleteItem(
+                                context.read<SavedScanCubit>().deleteItem(
                                   result.id,
                                   errorMessage: l10n.deleteError,
                                 );

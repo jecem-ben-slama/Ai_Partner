@@ -1,6 +1,6 @@
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
-import 'package:ai_partner/presentation/screens/history_screen.dart';
+import 'package:ai_partner/presentation/screens/saved_scan_screen.dart';
 import 'package:ai_partner/presentation/screens/home_screen.dart';
 import 'package:ai_partner/presentation/screens/settings_screen.dart';
 import 'package:floating_navbar/floating_navbar.dart';
@@ -19,7 +19,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
   int index = 0;
   final List<Widget> screens = [
     const HomeScreen(),
-    const HistoryScreen(),
+    const SavedScanScreen(),
     const SettingsScreen(),
   ];
   @override

@@ -1,20 +1,20 @@
 import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
-import 'history_state.dart';
+import 'saved_scan_state.dart';
 
-class HistoryCubit extends Cubit<HistoryState> {
+class SavedScanCubit extends Cubit<SavedScanState> {
   final StorageService _storageService;
 
-  HistoryCubit(this._storageService) : super(HistoryInitial());
+  SavedScanCubit(this._storageService) : super(SavedScanInitial());
 
   Future<void> loadHistory({String? errorMessage}) async {
-    emit(HistoryLoading());
+    emit(SavedScanLoading());
     try {
       final scans = await _storageService.getHistory();
-      emit(HistoryLoaded(scans));
+      emit(SavedScanLoaded(scans));
     } catch (e) {
-      emit(HistoryError(errorMessage ?? "Could not load history."));
+      emit(SavedScanError(errorMessage ?? "Could not load history."));
     }
   }
 
@@ -25,17 +25,16 @@ class HistoryCubit extends Cubit<HistoryState> {
     try {
       final resultsJson = results.map((res) => res.toJson()).toList();
       await _storageService.saveScan(resultsJson);
-      // We pass null here because loadHistory has its own default or we can pass a specific message
       await loadHistory();
     } catch (e) {
-      emit(HistoryError(errorMessage));
+      emit(SavedScanError(errorMessage));
     }
   }
 
   void toggleFavorite(String id) async {
-    if (state is HistoryLoaded) {
+    if (state is SavedScanLoaded) {
       final List<Map<String, dynamic>> currentHistory = List.from(
-        (state as HistoryLoaded).savedScans,
+        (state as SavedScanLoaded).savedScans,
       );
 
       for (var entry in currentHistory) {
@@ -48,15 +47,15 @@ class HistoryCubit extends Cubit<HistoryState> {
       }
 
       await _storageService.saveFullHistory(currentHistory);
-      emit(HistoryLoaded(currentHistory));
+      emit(SavedScanLoaded(currentHistory));
     }
   }
 
   void updateLabel(String id, String newLabel) async {
-    if (state is HistoryLoaded) {
+    if (state is SavedScanLoaded) {
       await _storageService.updateScanLabel(id, newLabel);
       final updatedHistory = await _storageService.getHistory();
-      emit(HistoryLoaded(updatedHistory));
+      emit(SavedScanLoaded(updatedHistory));
     }
   }
 
@@ -65,16 +64,16 @@ class HistoryCubit extends Cubit<HistoryState> {
       await _storageService.deleteScanById(id);
       await loadHistory();
     } catch (e) {
-      emit(HistoryError(errorMessage));
+      emit(SavedScanError(errorMessage));
     }
   }
 
   Future<void> clearAll({required String errorMessage}) async {
     try {
       await _storageService.deleteAll();
-      emit(HistoryLoaded(const []));
+      emit(SavedScanLoaded(const []));
     } catch (e) {
-      emit(HistoryError(errorMessage));
+      emit(SavedScanError(errorMessage));
     }
   }
 }

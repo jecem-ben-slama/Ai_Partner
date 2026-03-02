@@ -1,5 +1,5 @@
 import 'package:ai_partner/core/theme/app_colors.dart';
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';

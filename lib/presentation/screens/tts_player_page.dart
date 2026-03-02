@@ -1,4 +1,4 @@
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/presentation/widgets/highlighted_text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

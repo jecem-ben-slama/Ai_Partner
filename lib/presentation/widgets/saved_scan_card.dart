@@ -1,7 +1,7 @@
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
-import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';
 import 'package:ai_partner/presentation/widgets/action_button.dart';
@@ -12,10 +12,10 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
-class HistoryItemCard extends StatelessWidget {
+class SavedScanCard extends StatelessWidget {
   final Map<String, dynamic> scan;
 
-  const HistoryItemCard({super.key, required this.scan});
+  const SavedScanCard({super.key, required this.scan});
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +139,7 @@ class HistoryItemCard extends StatelessWidget {
         IconButton(
           onPressed: () {
             context.read<HapticService>().trigger;
-            context.read<HistoryCubit>().toggleFavorite(id);
+            context.read<SavedScanCubit>().toggleFavorite(id);
           },
           icon: Icon(
             isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
@@ -328,7 +328,7 @@ class HistoryItemCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              context.read<HistoryCubit>().deleteItem(
+              context.read<SavedScanCubit>().deleteItem(
                 scan['id'],
                 errorMessage: l10n.deleteError,
               );
@@ -404,7 +404,7 @@ class HistoryItemCard extends StatelessWidget {
               if (controller.text.trim().isNotEmpty) {
                 context.read<HapticService>().trigger;
 
-                context.read<HistoryCubit>().updateLabel(
+                context.read<SavedScanCubit>().updateLabel(
                   scanId,
                   controller.text.trim(),
                 );

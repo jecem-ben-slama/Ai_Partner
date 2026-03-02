@@ -1,19 +1,19 @@
-import 'package:ai_partner/l10n/app_localizations.dart';
-import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
-import 'package:ai_partner/logic/cubit/storage/history_state.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_state.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
-import 'package:ai_partner/presentation/widgets/history_item_card.dart';
+import 'package:ai_partner/presentation/widgets/saved_scan_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+class SavedScanScreen extends StatefulWidget {
+  const SavedScanScreen({super.key});
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  State<SavedScanScreen> createState() => _SavedScanScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _SavedScanScreenState extends State<SavedScanScreen> {
   String _searchQuery = "";
   bool _showOnlyFavorites = false;
   final TextEditingController _searchController = TextEditingController();
@@ -52,13 +52,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
           _buildFilterTabs(l10n),
           const SizedBox(height: 8),
           Expanded(
-            child: BlocBuilder<HistoryCubit, HistoryState>(
+            child: BlocBuilder<SavedScanCubit, SavedScanState>(
               builder: (context, state) {
-                if (state is HistoryLoading) {
+                if (state is SavedScanLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (state is HistoryLoaded) {
+                if (state is SavedScanLoaded) {
                   if (state.savedScans.isEmpty) {
                     return _buildEmptyState(l10n);
                   }
@@ -94,7 +94,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final scan = filteredScans[index];
-                      return HistoryItemCard(
+                      return SavedScanCard(
                         key: ValueKey(scan['id']),
                         scan: scan,
                       );
@@ -262,7 +262,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           TextButton(
             onPressed: () {
-              context.read<HistoryCubit>().clearAll(
+              context.read<SavedScanCubit>().clearAll(
                 errorMessage: l10n.clearHistoryError,
               );
               Navigator.pop(dialogContext);

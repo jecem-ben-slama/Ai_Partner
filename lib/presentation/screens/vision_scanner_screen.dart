@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_state.dart';
 import 'package:ai_partner/models/scan_result_model.dart';

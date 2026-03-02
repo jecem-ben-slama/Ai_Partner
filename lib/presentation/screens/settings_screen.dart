@@ -1,4 +1,4 @@
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_state.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';

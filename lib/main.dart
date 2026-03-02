@@ -13,7 +13,7 @@ import 'package:ai_partner/logic/services/tts_service.dart';
 
 //* Cubit imports
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
-import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
 import 'package:ai_partner/logic/cubit/tts/tts_cubit.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
@@ -21,14 +21,14 @@ import 'package:ai_partner/logic/cubit/settings/settings_state.dart';
 
 //* Core & UI imports
 import 'package:ai_partner/core/theme/app_theme.dart';
-import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 
 void main() async {
   // Ensure native bindings are ready
   WidgetsFlutterBinding.ensureInitialized();
-await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Initialize SharedPreferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) =>
-                HistoryCubit(context.read<StorageService>())..loadHistory(),
+                SavedScanCubit(context.read<StorageService>())..loadHistory(),
           ),
           BlocProvider(create: (context) => TranslationCubit(hapticService)),
           BlocProvider(
