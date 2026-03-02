@@ -1,4 +1,5 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
@@ -37,7 +38,11 @@ class HistoryItemCard extends StatelessWidget {
     return Dismissible(
       key: Key('dismiss_${scan['id']}'),
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) async => _showDeleteConfirm(context),
+      confirmDismiss: (_) async {
+        _showDeleteConfirm(context);
+        context.read<HapticService>().triggerSuccess();
+        return null;
+      },
       background: _buildDeleteBackground(),
       child: Card(
         elevation: 0,
@@ -49,12 +54,11 @@ class HistoryItemCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () => _showScanDetail(context, results, l10n),
-          onLongPress: () => _showRenameDialog(
-            context,
-            firstRes.label ?? "",
-            scan['id'],
-            l10n,
-          ),
+          onLongPress: () {
+            context.read<HapticService>().triggerLoading();
+
+            _showRenameDialog(context, firstRes.label ?? "", scan['id'], l10n);
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
@@ -134,7 +138,7 @@ class HistoryItemCard extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            context.read<HapticService>().trigger;
             context.read<HistoryCubit>().toggleFavorite(id);
           },
           icon: Icon(
@@ -398,6 +402,8 @@ class HistoryItemCard extends StatelessWidget {
           TextButton(
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
+                context.read<HapticService>().trigger;
+
                 context.read<HistoryCubit>().updateLabel(
                   scanId,
                   controller.text.trim(),

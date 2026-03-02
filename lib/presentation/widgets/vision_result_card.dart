@@ -1,6 +1,7 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/logic/cubit/storage/history_state.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';
@@ -71,7 +72,11 @@ class VisionResultCard extends StatelessWidget {
               final String customName = nameController.text.trim();
               if (customName.isNotEmpty) {
                 final updatedResult = result.copyWith(label: customName);
-                context.read<HistoryCubit>().saveNewScan([updatedResult],errorMessage: l10n.saveError);
+                context.read<HistoryCubit>().saveNewScan([
+                  updatedResult,
+                ], errorMessage: l10n.saveError);
+                context.read<HapticService>().trigger;
+
                 Navigator.pop(dialogContext);
               }
             },
@@ -214,6 +219,8 @@ class VisionResultCard extends StatelessWidget {
                               Clipboard.setData(
                                 ClipboardData(text: result.content),
                               );
+                              context.read<HapticService>().trigger;
+
                               _showTopNotification(context, l10n.copiedLabel);
                             },
                           ),
@@ -231,8 +238,9 @@ class VisionResultCard extends StatelessWidget {
                                 // Unsave logic
                                 context.read<HistoryCubit>().deleteItem(
                                   result.id,
-                                  errorMessage: l10n.deleteError
+                                  errorMessage: l10n.deleteError,
                                 );
+                                context.read<HapticService>().trigger;
                               } else {
                                 // Save logic
                                 _showSaveDialog(context);

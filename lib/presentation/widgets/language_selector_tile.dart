@@ -1,3 +1,4 @@
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/models/language_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -44,6 +45,8 @@ class LanguageSelectorTile extends StatelessWidget {
           }).toList(),
           onChanged: (code) {
             if (code != null) {
+              context.read<HapticService>().trigger();
+
               context.read<SettingsCubit>().changeLanguage(code);
             }
           },

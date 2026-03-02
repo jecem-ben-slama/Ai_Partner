@@ -1,3 +1,4 @@
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_partner/main.dart';
@@ -9,18 +10,19 @@ void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // 1. Initialize SharedPreferences with mock values
     SharedPreferences.setMockInitialValues({});
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
     // 2. Initialize the required services
     final settingsService = SettingsService(prefs);
     final ttsService = TtsService();
+    final hapticService=HapticService();
 
     // 3. Build our app and trigger a frame, passing the new dependencies
     await tester.pumpWidget(
       MyApp(
-        prefs: prefs,
         settingsService: settingsService,
         ttsService: ttsService,
+        hapticService: hapticService,
       ),
     );
 

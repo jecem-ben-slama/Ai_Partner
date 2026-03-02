@@ -174,4 +174,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get systemLabel => 'النظام';
+
+  @override
+  String get interactionLabel => 'التفاعل';
+
+  @override
+  String get hapticLabel => 'الاهتزازات التفاعلية';
+
+  @override
+  String get off => 'إيقاف';
+
+  @override
+  String get low => 'خفيف';
+
+  @override
+  String get med => 'متوسط';
+
+  @override
+  String get high => 'قوي';
 }

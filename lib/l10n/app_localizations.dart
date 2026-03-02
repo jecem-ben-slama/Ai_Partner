@@ -429,6 +429,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System'**
   String get systemLabel;
+
+  /// No description provided for @interactionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interaction'**
+  String get interactionLabel;
+
+  /// No description provided for @hapticLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Haptic Feedback'**
+  String get hapticLabel;
+
+  /// No description provided for @off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get off;
+
+  /// No description provided for @low.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get low;
+
+  /// No description provided for @med.
+  ///
+  /// In en, this message translates to:
+  /// **'Med'**
+  String get med;
+
+  /// No description provided for @high.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get high;
 }
 
 class _AppLocalizationsDelegate

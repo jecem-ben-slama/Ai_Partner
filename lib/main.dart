@@ -2,67 +2,98 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-//* Localization imports
-import 'package:ai_partner/l10n/app_localizations.dart';
+
 //* Service imports
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/logic/services/universal_scanner_service.dart';
 import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:ai_partner/logic/services/storage_service.dart';
-import 'package:ai_partner/logic/services/tts_service.dart'; 
-//* Themes & UI imports
-import 'package:ai_partner/core/theme/app_theme.dart';
-import 'package:ai_partner/presentation/screens/navbar_screen.dart';
-import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
+import 'package:ai_partner/logic/services/tts_service.dart';
+
 //* Cubit imports
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
 import 'package:ai_partner/logic/cubit/tts/tts_cubit.dart';
-import 'logic/cubit/settings/settings_cubit.dart';
-import 'logic/cubit/settings/settings_state.dart';
+import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
+import 'package:ai_partner/logic/cubit/settings/settings_state.dart';
+
+//* Core & UI imports
+import 'package:ai_partner/core/theme/app_theme.dart';
+import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/presentation/screens/navbar_screen.dart';
+import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 
 void main() async {
+  // Ensure native bindings are ready
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize SharedPreferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Initialize Core Services
   final settingsService = SettingsService(prefs);
   final ttsService = TtsService();
+  final hapticService = HapticService();
+
+  // Pre-sync HapticService with saved user preference
+  hapticService.updateSetting(settingsService.hapticLevel);
   runApp(
     MyApp(
-      prefs: prefs,
       settingsService: settingsService,
       ttsService: ttsService,
+      hapticService: hapticService,
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final SharedPreferences prefs;
   final SettingsService settingsService;
   final TtsService ttsService;
+  final HapticService hapticService;
+
   const MyApp({
     super.key,
-    required this.prefs,
     required this.settingsService,
-    required this.ttsService, 
+    required this.ttsService,
+    required this.hapticService,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiRepositoryProvider(
+      // Provide stateless/action services here
       providers: [
-        BlocProvider(create: (context) => SettingsCubit(settingsService)),
-        BlocProvider(
-          create: (context) => VisionCubit(UniversalScannerService()),
-        ),
-        BlocProvider(
-          create: (context) => HistoryCubit(StorageService())..loadHistory(),
-        ),
-        BlocProvider(create: (context) => TranslationCubit()),
-        BlocProvider(create: (context) => TtsCubit(ttsService)),
+        RepositoryProvider.value(value: hapticService),
+        RepositoryProvider.value(value: ttsService),
+        RepositoryProvider(create: (_) => UniversalScannerService()),
+        RepositoryProvider(create: (_) => StorageService()),
       ],
-      child: SafeArea(
-        child: const AppView(),
-        ),    );
+      child: MultiBlocProvider(
+        // Provide state-managing Cubits here
+        providers: [
+          BlocProvider(
+            create: (context) => SettingsCubit(settingsService, hapticService),
+          ),
+          BlocProvider(
+            create: (context) => VisionCubit(
+              context.read<UniversalScannerService>(),
+              hapticService,
+            ),
+          ),
+          BlocProvider(
+            create: (context) =>
+                HistoryCubit(context.read<StorageService>())..loadHistory(),
+          ),
+          BlocProvider(create: (context) => TranslationCubit(hapticService)),
+          BlocProvider(
+            create: (context) =>
+                TtsCubit(context.read<TtsService>(), hapticService),
+          ),
+        ],
+        child: SafeArea(child: const AppView()),
+      ),
+    );
   }
 }
 
@@ -72,12 +103,17 @@ class AppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (previous, current) =>
+          previous.themeMode != current.themeMode ||
+          previous.locale != current.locale ||
+          previous.showOnboarding != current.showOnboarding,
       builder: (context, state) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-         theme: AppTheme.lightTheme,
+          theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: state.themeMode, locale: state.locale,
+          themeMode: state.themeMode,
+          locale: state.locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: state.showOnboarding

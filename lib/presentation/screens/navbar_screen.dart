@@ -1,10 +1,12 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/presentation/screens/history_screen.dart';
 import 'package:ai_partner/presentation/screens/home_screen.dart';
 import 'package:ai_partner/presentation/screens/settings_screen.dart';
 import 'package:floating_navbar/floating_navbar.dart';
 import 'package:floating_navbar/floating_navbar_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NavbarScreen extends StatefulWidget {
   const NavbarScreen({super.key});
@@ -49,9 +51,10 @@ class _NavbarScreenState extends State<NavbarScreen> {
           ),
         ],
         horizontalPadding: 20,
-        hapticFeedback: true,
+        hapticFeedback: false,
         showTitle: true,
         onPageChanged: (value) {
+          context.read<HapticService>().trigger();
           setState(() {
             index = value;
           });

@@ -1,6 +1,7 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_state.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/presentation/widgets/language_selector_tile.dart';
 import 'package:ai_partner/presentation/widgets/settings_switch_widget.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // --- Appearance ---
                 _buildSectionHeader(l10n.appearanceLabel),
                 _buildSettingsGroup([
                   SettingsSwitchWidget(
@@ -30,8 +32,10 @@ class SettingsScreen extends StatelessWidget {
                     trailing: Switch.adaptive(
                       activeThumbColor: Colors.blueAccent,
                       value: state.themeMode == ThemeMode.dark,
-                      onChanged: (value) =>
-                          context.read<SettingsCubit>().toggleTheme(),
+                      onChanged: (value) {
+                        context.read<SettingsCubit>().toggleTheme();
+                        context.read<HapticService>().trigger();
+                      },
                     ),
                   ),
                   LanguageSelectorTile(
@@ -39,14 +43,46 @@ class SettingsScreen extends StatelessWidget {
                     currentLanguageCode: state.locale.languageCode,
                   ),
                 ]),
-                const SizedBox(height: 25),
-                _buildSectionHeader(l10n.systemLabel),
 
+                const SizedBox(height: 25),
+
+                // --- Interaction ---
+                _buildSectionHeader(l10n.interactionLabel),
+                _buildSettingsGroup([
+                  // Haptic Selection Tile (Matches LanguageSelectorTile style)
+                  SettingsSwitchWidget(
+                    title: l10n.hapticLabel,
+                    icon: Icons.vibration_rounded,
+                    onTap: () => _showHapticSelector(context, state, l10n),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _getHapticName(state.hapticLevel, l10n),
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ),
+                ]),
+
+                const SizedBox(height: 25),
+
+                // --- System ---
+                _buildSectionHeader(l10n.systemLabel),
                 _buildSettingsGroup([
                   SettingsSwitchWidget(
                     title: l10n.resetTitle,
                     icon: Icons.restart_alt_rounded,
-                    onTap: () => showResetDialog(context, l10n),
+                    onTap: () {
+                      context.read<HapticService>().trigger();
+
+                      showResetDialog(context, l10n);
+                    },
                   ),
                   SettingsSwitchWidget(
                     title: l10n.aboutLabel,
@@ -54,8 +90,9 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => _showAboutSheet(context, l10n),
                   ),
                 ]),
+
                 const SizedBox(height: 40),
-                Center(
+                const Center(
                   child: Text(
                     "v1.2.4",
                     style: TextStyle(color: Colors.grey, fontSize: 12),
@@ -69,6 +106,56 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  // Helper to map Enum to Translated String
+  String _getHapticName(HapticIntensity level, AppLocalizations l10n) {
+    switch (level) {
+      case HapticIntensity.off:
+        return l10n.off;
+      case HapticIntensity.light:
+        return l10n.low;
+      case HapticIntensity.medium:
+        return l10n.med;
+      case HapticIntensity.strong:
+        return l10n.high;
+    }
+  }
+
+  // Opens a selection list dialog similar to Language selection
+  void _showHapticSelector(
+    BuildContext context,
+    SettingsState state,
+    AppLocalizations l10n,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.hapticLabel),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        content: RadioGroup<HapticIntensity>(
+          groupValue: state.hapticLevel,
+          onChanged: (HapticIntensity? value) {
+            if (value != null) {
+              context.read<SettingsCubit>().setHapticLevel(value);
+              context.read<HapticService>().trigger();
+              Navigator.pop(context);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: HapticIntensity.values.map((level) {
+              return RadioListTile<HapticIntensity>(
+                title: Text(_getHapticName(level, l10n)),
+                value: level,
+                activeColor: Colors.blueAccent,
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- UI Builders (Keep your existing _buildSectionHeader and _buildSettingsGroup) ---
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 10),
@@ -85,37 +172,33 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsGroup(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05), // Subtle for dark mode
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-      ),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Column(
-          children: children.asMap().entries.map((entry) {
-            final index = entry.key;
-            final widget = entry.value;
-            return Column(
-              children: [
-                widget,
-                if (index != children.length - 1)
-                  Divider(
-                    indent: 60,
-                    endIndent: 20,
-                    height: 1,
-                    color: Colors.grey.withValues(alpha: 0.1),
-                  ),
-              ],
-            );
-          }).toList(),
-        ),
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Column(
+        children: children.asMap().entries.map((entry) {
+          final index = entry.key;
+          final widget = entry.value;
+          return Column(
+            children: [
+              widget,
+              if (index != children.length - 1)
+                Divider(
+                  indent: 60,
+                  endIndent: 20,
+                  height: 1,
+                  color: Colors.grey,
+                ),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
+
+  // ... Keep your _showAboutSheet and showResetDialog methods
 
   void _showAboutSheet(BuildContext context, AppLocalizations l10n) {
     showModalBottomSheet(
@@ -138,7 +221,7 @@ class SettingsScreen extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
+                  color: Colors.grey,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -170,7 +253,7 @@ class SettingsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: () {}, // Add URL Launcher logic
+                onPressed: () {},
                 icon: const Icon(Icons.code_rounded),
                 label: const Text("View on GitHub"),
               ),
@@ -194,7 +277,10 @@ class SettingsScreen extends StatelessWidget {
         content: Text(l10n.resetWarning),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              context.read<HapticService>().trigger;
+              Navigator.pop(context);
+            },
             child: Text(
               l10n.cancel,
               style: const TextStyle(color: Colors.grey),
@@ -202,7 +288,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
+              backgroundColor: Colors.redAccent,
               foregroundColor: Colors.redAccent,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -210,10 +296,11 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             onPressed: () {
+              context.read<HapticService>().trigger;
               context.read<SettingsCubit>().resetSettings();
               Navigator.pop(context);
             },
-            child: Text(l10n.confirm),
+            child: Text(l10n.confirm, style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -176,4 +176,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get systemLabel => 'System';
+
+  @override
+  String get interactionLabel => 'Interaction';
+
+  @override
+  String get hapticLabel => 'Haptic Feedback';
+
+  @override
+  String get off => 'Off';
+
+  @override
+  String get low => 'Low';
+
+  @override
+  String get med => 'Med';
+
+  @override
+  String get high => 'High';
 }

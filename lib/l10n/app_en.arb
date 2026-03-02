@@ -54,7 +54,13 @@
   "translatingLabel": "Translating...",
   "downloadingLabel": "Downloading...",
   "appearanceLabel": "Appearance",
-"systemLabel": "System"
+"systemLabel": "System",
+"interactionLabel": "Interaction",
+  "hapticLabel": "Haptic Feedback",
+  "off": "Off",
+  "low": "Low",
+  "med": "Med",
+  "high": "High"
 
 
 

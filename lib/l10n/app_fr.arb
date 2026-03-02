@@ -53,5 +53,11 @@
   "translatingLabel": "Traduction en cours...",
   "downloadingLabel": "Téléchargement...",
   "appearanceLabel": "Apparence",
-"systemLabel": "Système"
+"systemLabel": "Système",
+"interactionLabel": "Interaction",
+  "hapticLabel": "Retour Haptique",
+  "off": "Non",
+  "low": "Faible",
+  "med": "Moy",
+  "high": "Fort"
 }

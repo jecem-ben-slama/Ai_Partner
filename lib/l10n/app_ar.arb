@@ -53,5 +53,11 @@
   "translatingLabel": "جاري الترجمة...",
   "downloadingLabel": "جاري تحميل حزمة",
   "appearanceLabel": "المظهر",
-"systemLabel": "النظام"
+"systemLabel": "النظام",
+"interactionLabel": "التفاعل",
+  "hapticLabel": "الاهتزازات التفاعلية",
+  "off": "إيقاف",
+  "low": "خفيف",
+  "med": "متوسط",
+  "high": "قوي"
 }

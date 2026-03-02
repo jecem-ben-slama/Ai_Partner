@@ -1,9 +1,11 @@
 import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:ai_partner/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';
 import 'package:ai_partner/presentation/screens/vision_scanner_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -104,10 +106,13 @@ class HomeScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          ),
+          onTap: () {
+            context.read<HapticService>().trigger;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => page),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(

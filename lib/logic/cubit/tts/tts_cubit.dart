@@ -1,3 +1,4 @@
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 import 'tts_state.dart';
@@ -5,42 +6,57 @@ import '../../services/tts_service.dart';
 
 class TtsCubit extends Cubit<TtsState> {
   final TtsService _service;
-
-  // Initialize ML Kit Language Identifier
+  final HapticService _hapticService;
   final _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
 
-  TtsCubit(this._service) : super(const TtsState()) {
+  TtsCubit(this._service, this._hapticService) : super(const TtsState()) {
     // Setup handlers once when the Cubit is created
     _service.setHandlers(
-      onStart: () => emit(state.copyWith(status: TtsStatus.playing)),
-      onComplete: () =>
-          emit(state.copyWith(status: TtsStatus.stopped, start: 0, end: 0)),
-      onCancel: () =>
-          emit(state.copyWith(status: TtsStatus.stopped, start: 0, end: 0)),
-      onProgress: (start, end) => emit(state.copyWith(start: start, end: end)),
-      onError: (err) =>
-          emit(state.copyWith(status: TtsStatus.error, errorMessage: err)),
+      onStart: () {
+        // Subtle haptic feedback when speech actually begins
+        _hapticService.trigger();
+        emit(state.copyWith(status: TtsStatus.playing));
+      },
+      onComplete: () {
+        emit(state.copyWith(status: TtsStatus.stopped, start: 0, end: 0));
+      },
+      onCancel: () {
+        emit(state.copyWith(status: TtsStatus.stopped, start: 0, end: 0));
+      },
+      onProgress: (start, end) {
+        emit(state.copyWith(start: start, end: end));
+      },
+      onError: (err) {
+        // Heavy haptic feedback for engine-level errors
+        _hapticService.triggerError();
+        emit(state.copyWith(status: TtsStatus.error, errorMessage: err));
+      },
     );
   }
 
-  /// The main method called by your UI "Play" button
-  /// The main method called by your UI "Play" button
   Future<void> detectAndSpeak(
     String text, {
     String? defaultErrorMessage,
   }) async {
-    if (text.trim().isEmpty) return;
+    if (text.trim().isEmpty) {
+      // Alert the user that input is missing
+      await _hapticService.triggerError();
+      return;
+    }
 
     // 1. Enter Loading state
     emit(state.copyWith(status: TtsStatus.loading, errorMessage: ''));
 
+    // 2. Start "Thinking" pulse while identifying language
+    await _hapticService.triggerLoading();
+
     try {
-      // 2. Identify the language code
+      // 3. Identify the language code
       final String languageCode = await _languageIdentifier.identifyLanguage(
         text,
       );
 
-      // 3. Map the code to a user-friendly name
+      // 4. Map the code to a user-friendly name
       final Map<String, String> langMap = {
         'en': 'English',
         'fr': 'French',
@@ -54,18 +70,19 @@ class TtsCubit extends Cubit<TtsState> {
           ? 'Unknown'
           : (langMap[languageCode] ?? languageCode.toUpperCase());
 
-      // 4. Update state with the language name
+      // 5. Update state with the language name
       emit(state.copyWith(detectedLanguage: readableName));
 
-      // 5. Configure engine and speak
+      // 6. Configure engine and speak
       if (languageCode != 'und') {
-        // FIXED: Removed "bool isSupported =" because setLanguage returns void
         await _service.setLanguage(languageCode);
       }
 
+      // Voice starts playing; 'onStart' handler will trigger the success haptic
       await _service.speak(text);
     } catch (e) {
-      // 6. Emit "Nice" error message
+      // 7. Emit error message and trigger heavy vibration
+      await _hapticService.triggerError();
       emit(
         state.copyWith(
           status: TtsStatus.error,
@@ -78,11 +95,15 @@ class TtsCubit extends Cubit<TtsState> {
 
   Future<void> stop() async {
     await _service.stop();
+    // Confirm the action was successful
+    await _hapticService.trigger();
     emit(state.copyWith(status: TtsStatus.stopped, detectedLanguage: ''));
   }
 
   Future<void> updateSpeed(double speed) async {
     await _service.setSpeed(speed);
+    // Tiny haptic "tick" when adjusting sliders
+    await _hapticService.trigger();
     emit(state.copyWith(speed: speed));
   }
 

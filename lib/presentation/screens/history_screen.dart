@@ -1,6 +1,7 @@
 import 'package:ai_partner/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/storage/history_cubit.dart';
 import 'package:ai_partner/logic/cubit/storage/history_state.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/presentation/widgets/history_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,7 +38,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Icons.delete_sweep_outlined,
               color: Colors.redAccent,
             ),
-            onPressed: () => _showDeleteConfirm(context, l10n),
+            onPressed: () {
+              context.read<HapticService>().triggerSuccess();
+
+              _showDeleteConfirm(context, l10n);
+            },
           ),
         ],
       ),
@@ -154,12 +159,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
             _filterTile(
               label: l10n.allscansLabel,
               isActive: !_showOnlyFavorites,
-              onTap: () => setState(() => _showOnlyFavorites = false),
+              onTap: () {
+                setState(() => _showOnlyFavorites = false);
+                context.read<HapticService>().trigger();
+              },
             ),
             _filterTile(
               label: l10n.favoritesLabel,
               isActive: _showOnlyFavorites,
-              onTap: () => setState(() => _showOnlyFavorites = true),
+              onTap: () {
+                setState(() => _showOnlyFavorites = true);
+                context.read<HapticService>().trigger();
+              },
             ),
           ],
         ),
