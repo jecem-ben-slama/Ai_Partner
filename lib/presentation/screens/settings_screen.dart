@@ -6,6 +6,7 @@ import 'package:ai_partner/presentation/widgets/language_selector_tile.dart';
 import 'package:ai_partner/presentation/widgets/settings_switch_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -253,7 +254,11 @@ class SettingsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  _launchGitHub(
+                    "https://github.com/jecem-ben-slama/Ai_Partner",
+                  );
+                },
                 icon: const Icon(Icons.code_rounded),
                 label: const Text("View on GitHub"),
               ),
@@ -262,6 +267,13 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _launchGitHub(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
   }
 
   void showResetDialog(BuildContext context, AppLocalizations l10n) {

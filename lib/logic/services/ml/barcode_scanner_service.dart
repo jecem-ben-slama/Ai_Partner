@@ -3,6 +3,7 @@ import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 class BarcodeScannerService {
+  //* instantiation du class provider par google ML kit
   final _scanner = BarcodeScanner();
 
   Future<List<VisionResult>> scan(File file) async {
