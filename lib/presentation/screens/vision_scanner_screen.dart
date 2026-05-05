@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_cubit.dart';
 import 'package:ai_partner/logic/cubit/scanning/vision_state.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/presentation/widgets/vision_result_card.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +27,11 @@ class VisionScannerScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => context.read<VisionCubit>().reset(),
+            onPressed: () {
+              context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
+              context.read<VisionCubit>().reset();
+            },
             tooltip: l10n.resetTitle,
           ),
         ],
@@ -197,16 +203,22 @@ class VisionScannerScreen extends StatelessWidget {
             context,
             icon: Icons.camera_alt_rounded,
             label: l10n.cameraLabel,
-            onPressed: () =>
-                _handlePickImage(context, ImageSource.camera, l10n),
+            onPressed: () {
+              context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
+              _handlePickImage(context, ImageSource.camera, l10n);
+            },
           ),
           VerticalDivider(width: 1, indent: 20, endIndent: 20),
           _buildPodItem(
             context,
             icon: Icons.photo_library_rounded,
             label: l10n.galleryLabel,
-            onPressed: () =>
-                _handlePickImage(context, ImageSource.gallery, l10n),
+            onPressed: () {
+              context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
+              _handlePickImage(context, ImageSource.gallery, l10n);
+            },
           ),
         ],
       ),

@@ -194,4 +194,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get high => 'High';
+
+  @override
+  String get soundEffectsLabel => 'Sound Effects';
+
+  @override
+  String get notificationsLabel => 'Notifications';
 }

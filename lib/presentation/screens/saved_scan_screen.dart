@@ -2,6 +2,8 @@ import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_state.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
+import 'package:ai_partner/presentation/widgets/feedback_wrapper.dart';
 import 'package:ai_partner/presentation/widgets/saved_scan_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,8 +41,8 @@ class _SavedScanScreenState extends State<SavedScanScreen> {
               color: Colors.redAccent,
             ),
             onPressed: () {
-              context.read<HapticService>().triggerSuccess();
-
+               context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
               _showDeleteConfirm(context, l10n);
             },
           ),
@@ -154,25 +156,29 @@ class _SavedScanScreenState extends State<SavedScanScreen> {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(30),
         ),
-        child: Row(
-          children: [
-            _filterTile(
-              label: l10n.allscansLabel,
-              isActive: !_showOnlyFavorites,
-              onTap: () {
-                setState(() => _showOnlyFavorites = false);
-                context.read<HapticService>().trigger();
-              },
-            ),
-            _filterTile(
-              label: l10n.favoritesLabel,
-              isActive: _showOnlyFavorites,
-              onTap: () {
-                setState(() => _showOnlyFavorites = true);
-                context.read<HapticService>().trigger();
-              },
-            ),
-          ],
+        child: FeedbackWrapper(
+          child: Row(
+            children: [
+              _filterTile(
+                label: l10n.allscansLabel,
+                isActive: !_showOnlyFavorites,
+                onTap: () {
+                   context.read<SoundService>().playTap();
+                  context.read<HapticService>().trigger();
+                  setState(() => _showOnlyFavorites = false);
+                },
+              ),
+              _filterTile(
+                label: l10n.favoritesLabel,
+                isActive: _showOnlyFavorites,
+                onTap: () {
+                   context.read<SoundService>().playTap();
+                  context.read<HapticService>().trigger();
+                  setState(() => _showOnlyFavorites = true);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
@@ -7,14 +8,14 @@ import 'package:ai_partner/logic/services/ml/translation_service.dart';
 
 class TranslationCubit extends Cubit<TranslationState> {
   final _service = TranslationService();
-  final HapticService _hapticService; // Injected service
+  final HapticService _hapticService;
+  final SoundService _soundService;
 
   final _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
 
-  // Updated Constructor to require HapticService
-  TranslationCubit(this._hapticService) : super(TranslationInitial());
+  TranslationCubit(this._hapticService, this._soundService)
+    : super(TranslationInitial());
 
-  /// 1. Detect Language from Scanned Text
   Future<void> detectAndSetScannedText(
     String text, {
     required String errorMessage,
@@ -23,7 +24,6 @@ class TranslationCubit extends Cubit<TranslationState> {
 
     emit(TranslationDetecting());
 
-    // Start heartbeat pulse during detection
     await _hapticService.triggerLoading();
 
     try {
@@ -32,16 +32,16 @@ class TranslationCubit extends Cubit<TranslationState> {
       );
       final finalCode = languageCode == 'und' ? 'en' : languageCode;
 
-      // Subtle tap to confirm detection is done
       await _hapticService.trigger();
       emit(TranslationDetected(finalCode, text));
+      _soundService.playSuccess();
     } catch (e) {
       await _hapticService.triggerError();
       emit(TranslationError(errorMessage));
+      _soundService.playError();
     }
   }
 
-  /// 2. Core Translation Method
   Future<void> translateText({
     required String text,
     required TranslateLanguage source,
@@ -56,7 +56,6 @@ class TranslationCubit extends Cubit<TranslationState> {
       final isDownloaded = await _service.isLanguageDownloaded(target);
 
       if (!isDownloaded) {
-        // Long vibration for model downloading (significant event)
         await _hapticService.triggerLoading();
         emit(TranslationLoading("$downloadingMessage ${target.name}..."));
       } else {
@@ -71,7 +70,7 @@ class TranslationCubit extends Cubit<TranslationState> {
 
       // Reward the user with a Success Double-Pulse
       await _hapticService.triggerSuccess();
-
+      _soundService.playSuccess();
       emit(
         TranslationSuccess(
           translatedText: result,
@@ -82,6 +81,7 @@ class TranslationCubit extends Cubit<TranslationState> {
     } catch (e) {
       // Alert the user that translation failed
       await _hapticService.triggerError();
+      _soundService.playError();
       emit(TranslationError(errorMessage));
     }
   }

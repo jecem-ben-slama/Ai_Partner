@@ -1,4 +1,5 @@
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 import 'tts_state.dart';
@@ -7,9 +8,11 @@ import '../../services/tts_service.dart';
 class TtsCubit extends Cubit<TtsState> {
   final TtsService _service;
   final HapticService _hapticService;
+  final SoundService _soundService;
   final _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
 
-  TtsCubit(this._service, this._hapticService) : super(const TtsState()) {
+  TtsCubit(this._service, this._hapticService, this._soundService)
+    : super(const TtsState()) {
     // Setup handlers once when the Cubit is created
     _service.setHandlers(
       onStart: () {
@@ -29,6 +32,7 @@ class TtsCubit extends Cubit<TtsState> {
       onError: (err) {
         // Heavy haptic feedback for engine-level errors
         _hapticService.triggerError();
+        _soundService.playError();
         emit(state.copyWith(status: TtsStatus.error, errorMessage: err));
       },
     );
@@ -41,6 +45,8 @@ class TtsCubit extends Cubit<TtsState> {
     if (text.trim().isEmpty) {
       // Alert the user that input is missing
       await _hapticService.triggerError();
+              _soundService.playError();
+
       return;
     }
 
@@ -83,6 +89,8 @@ class TtsCubit extends Cubit<TtsState> {
     } catch (e) {
       // 7. Emit error message and trigger heavy vibration
       await _hapticService.triggerError();
+              _soundService.playError();
+
       emit(
         state.copyWith(
           status: TtsStatus.error,

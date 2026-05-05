@@ -465,6 +465,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'High'**
   String get high;
+
+  /// No description provided for @soundEffectsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound Effects'**
+  String get soundEffectsLabel;
+
+  /// No description provided for @notificationsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsLabel;
 }
 
 class _AppLocalizationsDelegate

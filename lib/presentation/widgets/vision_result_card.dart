@@ -2,6 +2,7 @@ import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_state.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';
@@ -241,6 +242,7 @@ class VisionResultCard extends StatelessWidget {
                                   errorMessage: l10n.deleteError,
                                 );
                                 context.read<HapticService>().trigger;
+                                context.read<SoundService>().playTap();
                               } else {
                                 // Save logic
                                 _showSaveDialog(context);

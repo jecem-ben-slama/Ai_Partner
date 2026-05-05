@@ -2,6 +2,8 @@ import 'package:ai_partner/core/theme/app_colors.dart';
 import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
 import 'package:ai_partner/logic/cubit/translation/translation_state.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/presentation/screens/tts_player_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -93,6 +95,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             )
                           : null,
                       onTap: () {
+                        context.read<SoundService>().playTap();
+                        context.read<HapticService>().trigger();
                         setState(
                           () => isSource
                               ? _sourceLang = lang
@@ -229,7 +233,11 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               suffixIcon: _textController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.close_rounded, size: 20),
-                      onPressed: () => setState(() => _textController.clear()),
+                      onPressed: () {
+                        context.read<SoundService>().playTap();
+                        context.read<HapticService>().trigger();
+                        setState(() => _textController.clear());
+                      },
                     )
                   : null,
             ),

@@ -1,3 +1,5 @@
+import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
@@ -5,15 +7,22 @@ import 'saved_scan_state.dart';
 
 class SavedScanCubit extends Cubit<SavedScanState> {
   final StorageService _storageService;
+  final SoundService _soundService;
+  final HapticService _hapticService;
 
-  SavedScanCubit(this._storageService) : super(SavedScanInitial());
+  SavedScanCubit(this._storageService, this._hapticService, this._soundService)
+    : super(SavedScanInitial());
 
   Future<void> loadHistory({String? errorMessage}) async {
     emit(SavedScanLoading());
     try {
       final scans = await _storageService.getHistory();
+      _hapticService.trigger();
+      _soundService.playSuccess();
       emit(SavedScanLoaded(scans));
     } catch (e) {
+      _hapticService.triggerError();
+      _soundService.playError();
       emit(SavedScanError(errorMessage ?? "Could not load history."));
     }
   }
@@ -27,7 +36,10 @@ class SavedScanCubit extends Cubit<SavedScanState> {
       await _storageService.saveScan(resultsJson);
       await loadHistory();
     } catch (e) {
+       _hapticService.triggerError();
+      _soundService.playError();
       emit(SavedScanError(errorMessage));
+      
     }
   }
 
@@ -47,6 +59,8 @@ class SavedScanCubit extends Cubit<SavedScanState> {
       }
 
       await _storageService.saveFullHistory(currentHistory);
+       _hapticService.triggerSuccess();
+      _soundService.playSuccess();
       emit(SavedScanLoaded(currentHistory));
     }
   }
@@ -55,6 +69,8 @@ class SavedScanCubit extends Cubit<SavedScanState> {
     if (state is SavedScanLoaded) {
       await _storageService.updateScanLabel(id, newLabel);
       final updatedHistory = await _storageService.getHistory();
+       _hapticService.trigger();
+      _soundService.playSuccess();
       emit(SavedScanLoaded(updatedHistory));
     }
   }
@@ -64,6 +80,8 @@ class SavedScanCubit extends Cubit<SavedScanState> {
       await _storageService.deleteScanById(id);
       await loadHistory();
     } catch (e) {
+       _hapticService.triggerError();
+      _soundService.playError();
       emit(SavedScanError(errorMessage));
     }
   }
@@ -74,6 +92,8 @@ class SavedScanCubit extends Cubit<SavedScanState> {
       emit(SavedScanLoaded(const []));
     } catch (e) {
       emit(SavedScanError(errorMessage));
+       _hapticService.triggerError();
+      _soundService.playError();
     }
   }
 }

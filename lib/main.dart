@@ -10,6 +10,7 @@ import 'package:ai_partner/logic/services/universal_scanner_service.dart';
 import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:ai_partner/logic/services/tts_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart'; // Added SoundService import
 
 //* Cubit imports
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
@@ -29,6 +30,7 @@ void main() async {
   // Ensure native bindings are ready
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
   // Initialize SharedPreferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -39,6 +41,7 @@ void main() async {
 
   // Pre-sync HapticService with saved user preference
   hapticService.updateSetting(settingsService.hapticLevel);
+
   runApp(
     MyApp(
       settingsService: settingsService,
@@ -62,37 +65,57 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiRepositoryProvider(
-      // Provide stateless/action services here
+    return MultiBlocProvider(
+      // 1. First, provide SettingsCubit because SoundService needs it
       providers: [
-        RepositoryProvider.value(value: hapticService),
-        RepositoryProvider.value(value: ttsService),
-        RepositoryProvider(create: (_) => UniversalScannerService()),
-        RepositoryProvider(create: (_) => StorageService()),
+        BlocProvider(
+          create: (context) => SettingsCubit(settingsService, hapticService),
+        ),
       ],
-      child: MultiBlocProvider(
-        // Provide state-managing Cubits here
+      child: MultiRepositoryProvider(
+        // 2. Next, provide Services. SoundService now injects SettingsCubit.
         providers: [
-          BlocProvider(
-            create: (context) => SettingsCubit(settingsService, hapticService),
-          ),
-          BlocProvider(
-            create: (context) => VisionCubit(
-              context.read<UniversalScannerService>(),
-              hapticService,
-            ),
-          ),
-          BlocProvider(
+          RepositoryProvider.value(value: hapticService),
+          RepositoryProvider.value(value: ttsService),
+          RepositoryProvider(
             create: (context) =>
-                SavedScanCubit(context.read<StorageService>())..loadHistory(),
+                SoundService(context.read<SettingsCubit>()), // Injected Cubit
           ),
-          BlocProvider(create: (context) => TranslationCubit(hapticService)),
-          BlocProvider(
-            create: (context) =>
-                TtsCubit(context.read<TtsService>(), hapticService),
-          ),
+          RepositoryProvider(create: (_) => UniversalScannerService()),
+          RepositoryProvider(create: (_) => StorageService()),
         ],
-        child: SafeArea(child: const AppView()),
+        child: MultiBlocProvider(
+          // 3. Provide all other Cubits
+          providers: [
+            BlocProvider(
+              create: (context) => VisionCubit(
+                context.read<UniversalScannerService>(),
+                hapticService,
+                context
+                    .read<
+                      SoundService
+                    >(), // Optional: Inject if Cubit triggers sounds
+              ),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  SavedScanCubit(context.read<StorageService>(),
+                context.read<HapticService>(),
+                context.read<SoundService>(),)..loadHistory(),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  TranslationCubit(hapticService, context.read<SoundService>()),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  TtsCubit(context.read<TtsService>(), hapticService,
+                context.read<SoundService>(),
+              ),
+            ),
+          ],
+          child: const SafeArea(child: AppView()),
+        ),
       ),
     );
   }

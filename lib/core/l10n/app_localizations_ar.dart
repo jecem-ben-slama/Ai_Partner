@@ -192,4 +192,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get high => 'قوي';
+
+  @override
+  String get soundEffectsLabel => 'المؤثرات الصوتية';
+
+  @override
+  String get notificationsLabel => 'الإشعارات';
 }

@@ -1,5 +1,6 @@
 import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/presentation/screens/saved_scan_screen.dart';
 import 'package:ai_partner/presentation/screens/home_screen.dart';
 import 'package:ai_partner/presentation/screens/settings_screen.dart';
@@ -55,6 +56,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
         showTitle: true,
         onPageChanged: (value) {
           context.read<HapticService>().trigger();
+          context.read<SoundService>().playTap();
           setState(() {
             index = value;
           });

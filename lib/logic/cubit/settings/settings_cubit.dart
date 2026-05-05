@@ -15,6 +15,9 @@ class SettingsCubit extends Cubit<SettingsState> {
           locale: _service.locale,
           showOnboarding: _service.showOnboarding,
           hapticLevel: _service.hapticLevel,
+          // Initialize new fields from persistence
+          soundEnabled: _service.soundEnabled,
+          notificationsEnabled: _service.notificationsEnabled,
         ),
       );
 
@@ -24,6 +27,18 @@ class SettingsCubit extends Cubit<SettingsState> {
         : ThemeMode.light;
     await _service.setThemeMode(newMode);
     emit(state.copyWith(themeMode: newMode));
+  }
+
+  // New: Toggle Sound
+  void toggleSound(bool enabled) async {
+    await _service.setSoundEnabled(enabled);
+    emit(state.copyWith(soundEnabled: enabled));
+  }
+
+  // New: Toggle Notifications
+  void toggleNotifications(bool enabled) async {
+    await _service.setNotificationsEnabled(enabled);
+    emit(state.copyWith(notificationsEnabled: enabled));
   }
 
   void completeOnboarding() async {
@@ -37,13 +52,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   void setHapticLevel(HapticIntensity level) async {
-    // 1. Update the Service memory FIRST
     _hapticService.updateSetting(level);
-
-    // 2. Persist to Disk
     await _service.setHapticLevel(level);
-
-    // 3. Update UI State
     emit(state.copyWith(hapticLevel: level));
   }
 
@@ -56,9 +66,11 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(
       SettingsState(
         themeMode: ThemeMode.light,
-        locale: Locale('en'),
+        locale: const Locale('en'),
         showOnboarding: true,
         hapticLevel: HapticIntensity.medium,
+        soundEnabled: true,
+        notificationsEnabled: true,
       ),
     );
   }

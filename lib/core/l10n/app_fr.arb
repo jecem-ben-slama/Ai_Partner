@@ -59,5 +59,7 @@
   "off": "Non",
   "low": "Faible",
   "med": "Moy",
-  "high": "Fort"
+  "high": "Fort",
+  "soundEffectsLabel": "Effets Sonores",
+    "notificationsLabel": "Notifications"
 }

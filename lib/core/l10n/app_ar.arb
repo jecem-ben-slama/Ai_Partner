@@ -59,5 +59,7 @@
   "off": "إيقاف",
   "low": "خفيف",
   "med": "متوسط",
-  "high": "قوي"
+  "high": "قوي",
+  "soundEffectsLabel": "المؤثرات الصوتية",
+    "notificationsLabel": "الإشعارات"
 }

@@ -47,7 +47,7 @@ class OnboardingScreen extends StatelessWidget {
         PageViewModel(
           title: "Always Offline",
           body:
-              "No internet? No problem. All AI models run directly on your device.",
+              "No internet? No problem. All AI models run directly on your device.\n Just make sure to download the packages beforehand",
           image: const Center(
             child: Icon(Icons.wifi_off, size: 100, color: Colors.redAccent),
           ),

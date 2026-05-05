@@ -1,4 +1,6 @@
 import 'package:ai_partner/core/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/presentation/widgets/highlighted_text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,7 +46,11 @@ class _TtsPlayerPageState extends State<TtsPlayerPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.cleaning_services_rounded),
-            onPressed: () => setState(() => _controller.clear()),
+            onPressed: () {
+               context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
+              setState(() => _controller.clear());
+            },
           ),
         ],
       ),

@@ -60,7 +60,9 @@
   "off": "Off",
   "low": "Low",
   "med": "Med",
-  "high": "High"
+  "high": "High",
+  "soundEffectsLabel": "Sound Effects",
+    "notificationsLabel": "Notifications"
 
 
 

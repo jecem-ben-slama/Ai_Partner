@@ -1,5 +1,6 @@
 import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/presentation/screens/translator_screen.dart';
@@ -265,6 +266,8 @@ class SavedScanCard extends StatelessWidget {
           ActionButton(
             icon: Icons.g_translate_rounded,
             onTap: () {
+               context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
               Navigator.pop(sheetCtx);
               Navigator.push(
                 context,
@@ -278,6 +281,8 @@ class SavedScanCard extends StatelessWidget {
           ActionButton(
             icon: Icons.volume_up_rounded,
             onTap: () {
+               context.read<SoundService>().playTap();
+              context.read<HapticService>().trigger();
               Navigator.pop(sheetCtx);
               Navigator.push(
                 context,
