@@ -10,7 +10,8 @@ import 'package:ai_partner/logic/services/universal_scanner_service.dart';
 import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:ai_partner/logic/services/tts_service.dart';
-import 'package:ai_partner/logic/services/sound_service.dart'; // Added SoundService import
+import 'package:ai_partner/logic/services/sound_service.dart';
+import 'package:ai_partner/logic/services/notification_service.dart'; // Added NotificationService import
 
 //* Cubit imports
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
@@ -66,20 +67,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      // 1. First, provide SettingsCubit because SoundService needs it
+      // 1. First, provide SettingsCubit (needed by Sound and Notification services)
       providers: [
         BlocProvider(
           create: (context) => SettingsCubit(settingsService, hapticService),
         ),
       ],
       child: MultiRepositoryProvider(
-        // 2. Next, provide Services. SoundService now injects SettingsCubit.
+        // 2. Provide Services.
         providers: [
           RepositoryProvider.value(value: hapticService),
           RepositoryProvider.value(value: ttsService),
           RepositoryProvider(
+            create: (context) => SoundService(context.read<SettingsCubit>()),
+          ),
+          // Added NotificationService initialization
+          RepositoryProvider(
             create: (context) =>
-                SoundService(context.read<SettingsCubit>()), // Injected Cubit
+                NotificationService(context.read<SettingsCubit>())
+                  ..initNotification(),
           ),
           RepositoryProvider(create: (_) => UniversalScannerService()),
           RepositoryProvider(create: (_) => StorageService()),
@@ -91,25 +97,28 @@ class MyApp extends StatelessWidget {
               create: (context) => VisionCubit(
                 context.read<UniversalScannerService>(),
                 hapticService,
-                context
-                    .read<
-                      SoundService
-                    >(), // Optional: Inject if Cubit triggers sounds
+                context.read<SoundService>(),
+                context.read<NotificationService>(),
               ),
             ),
             BlocProvider(
-              create: (context) =>
-                  SavedScanCubit(context.read<StorageService>(),
+              create: (context) => SavedScanCubit(
+                context.read<StorageService>(),
                 context.read<HapticService>(),
-                context.read<SoundService>(),)..loadHistory(),
+                context.read<SoundService>(),
+              )..loadHistory(),
             ),
             BlocProvider(
-              create: (context) =>
-                  TranslationCubit(hapticService, context.read<SoundService>()),
+              create: (context) => TranslationCubit(
+                hapticService,
+                context.read<SoundService>(),
+                context.read<NotificationService>(),
+              ),
             ),
             BlocProvider(
-              create: (context) =>
-                  TtsCubit(context.read<TtsService>(), hapticService,
+              create: (context) => TtsCubit(
+                context.read<TtsService>(),
+                hapticService,
                 context.read<SoundService>(),
               ),
             ),

@@ -7,10 +7,15 @@ plugins {
 
 android {
     namespace = "com.example.ai_partner"
-    compileSdk = flutter.compileSdkVersion
+    
+    // Updated to 36 to satisfy latest plugin requirements
+    compileSdk = 36 
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Required for flutter_local_notifications and modern Java 8+ features
+        isCoreLibraryDesugaringEnabled = true
+        
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -20,26 +25,26 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.ai_partner"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 26
-        targetSdk = flutter.targetSdkVersion
+        
+        // MinSDK 26 is excellent for modern Android features
+        minSdk = 26 
+        
+        // Updated to 36 to match compileSdk
+        targetSdk = 36 
+        
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-             isMinifyEnabled = true
-        isShrinkResources = true
-        proguardFiles(
-            getDefaultProguardFile("proguard-android-optimize.txt"),
-            "proguard-rules.pro"
-        )
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -48,8 +53,10 @@ android {
 flutter {
     source = "../.."
 }
-dependencies {
 
+dependencies {
+    // Core Library Desugaring library
+coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     // ML Kit Text Recognition
     implementation("com.google.mlkit:text-recognition:16.0.0")
     implementation("com.google.mlkit:text-recognition-chinese:16.0.0")
@@ -57,6 +64,6 @@ dependencies {
     implementation("com.google.mlkit:text-recognition-japanese:16.0.0")
     implementation("com.google.mlkit:text-recognition-korean:16.0.0")
 
-    // ✅ ADD THIS
+    // Network & Utilities
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

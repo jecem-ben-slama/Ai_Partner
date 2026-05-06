@@ -15,7 +15,6 @@ class SettingsCubit extends Cubit<SettingsState> {
           locale: _service.locale,
           showOnboarding: _service.showOnboarding,
           hapticLevel: _service.hapticLevel,
-          // Initialize new fields from persistence
           soundEnabled: _service.soundEnabled,
           notificationsEnabled: _service.notificationsEnabled,
         ),

@@ -1,4 +1,5 @@
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/notification_service.dart';
 import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
@@ -10,11 +11,15 @@ class TranslationCubit extends Cubit<TranslationState> {
   final _service = TranslationService();
   final HapticService _hapticService;
   final SoundService _soundService;
+  final NotificationService _notificationService;
 
   final _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
 
-  TranslationCubit(this._hapticService, this._soundService)
-    : super(TranslationInitial());
+  TranslationCubit(
+    this._hapticService,
+    this._soundService,
+    this._notificationService,
+  ) : super(TranslationInitial());
 
   Future<void> detectAndSetScannedText(
     String text, {
@@ -23,7 +28,6 @@ class TranslationCubit extends Cubit<TranslationState> {
     if (text.trim().isEmpty) return;
 
     emit(TranslationDetecting());
-
     await _hapticService.triggerLoading();
 
     try {
@@ -34,8 +38,20 @@ class TranslationCubit extends Cubit<TranslationState> {
 
       await _hapticService.trigger();
       emit(TranslationDetected(finalCode, text));
+
+      await _notificationService.showNotification(
+        id: 1,
+        title: "Language Detected",
+        body: "Source language identified as ${finalCode.toUpperCase()}.",
+      );
       _soundService.playSuccess();
     } catch (e) {
+      // ✅ Error Notification
+      await _notificationService.showNotification(
+        id: 101,
+        title: "Detection Failed",
+        body: errorMessage,
+      );
       await _hapticService.triggerError();
       emit(TranslationError(errorMessage));
       _soundService.playError();
@@ -68,7 +84,12 @@ class TranslationCubit extends Cubit<TranslationState> {
         target: target,
       );
 
-      // Reward the user with a Success Double-Pulse
+      await _notificationService.showNotification(
+        id: 2,
+        title: "Translation Ready",
+        body: "Successfully translated to ${target.name}.",
+      );
+
       await _hapticService.triggerSuccess();
       _soundService.playSuccess();
       emit(
@@ -79,7 +100,12 @@ class TranslationCubit extends Cubit<TranslationState> {
         ),
       );
     } catch (e) {
-      // Alert the user that translation failed
+      // ✅ Error Notification
+      await _notificationService.showNotification(
+        id: 102,
+        title: "Translation Error",
+        body: "Could not complete translation. Please check your connection.",
+      );
       await _hapticService.triggerError();
       _soundService.playError();
       emit(TranslationError(errorMessage));
