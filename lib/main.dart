@@ -11,6 +11,8 @@ import 'package:ai_partner/logic/services/settings_service.dart';
 import 'package:ai_partner/logic/services/tts_service.dart';
 import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/logic/services/notification_service.dart';
+import 'package:ai_partner/logic/services/ml/translation_service.dart'; // New
+import 'package:ai_partner/logic/services/ml/language_id_service.dart'; // New
 
 //* Repository imports
 import 'package:ai_partner/logic/repo/scan_repository.dart';
@@ -38,7 +40,6 @@ void main() async {
   final settingsService = SettingsService(prefs);
   final ttsService = TtsService();
   final hapticService = HapticService();
-  
 
   hapticService.updateSetting(settingsService.hapticLevel);
 
@@ -68,10 +69,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => SettingsCubit(
-            settingsService,
-            hapticService,
-          ),
+          create: (context) => SettingsCubit(settingsService, hapticService),
         ),
       ],
       child: MultiRepositoryProvider(
@@ -88,6 +86,9 @@ class MyApp extends StatelessWidget {
           ),
           RepositoryProvider(create: (_) => UniversalScannerService()),
           RepositoryProvider(create: (_) => ScanRepository()),
+          // --- NEW SERVICES ADDED HERE ---
+          RepositoryProvider(create: (_) => LanguageIdService()),
+          RepositoryProvider(create: (_) => TranslationService()),
         ],
         child: MultiBlocProvider(
           providers: [
@@ -99,17 +100,18 @@ class MyApp extends StatelessWidget {
                 context.read<NotificationService>(),
               ),
             ),
-            // ✅ FIX: Added NotificationService to SavedScanCubit and changed repo
             BlocProvider(
               create: (context) => SavedScanCubit(
-                context.read<ScanRepository>(), // Using SQLite Repository
+                context.read<ScanRepository>(),
                 context.read<HapticService>(),
                 context.read<SoundService>(),
-                context.read<NotificationService>(), // Added missing dependency
+                context.read<NotificationService>(),
               )..loadHistory(),
             ),
             BlocProvider(
               create: (context) => TranslationCubit(
+                context.read<LanguageIdService>(), // Added Dependency
+                context.read<TranslationService>(), // Added Dependency
                 hapticService,
                 context.read<SoundService>(),
                 context.read<NotificationService>(),
@@ -120,11 +122,11 @@ class MyApp extends StatelessWidget {
                 context.read<TtsService>(),
                 hapticService,
                 context.read<SoundService>(),
+                context.read<LanguageIdService>(),
               ),
             ),
-            
           ],
-          child: SafeArea(child: const AppView()),
+          child: const SafeArea(child: AppView()),
         ),
       ),
     );

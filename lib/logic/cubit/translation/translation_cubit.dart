@@ -1,21 +1,23 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'translation_state.dart';
+
+//* Service imports
 import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/logic/services/notification_service.dart';
 import 'package:ai_partner/logic/services/sound_service.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_mlkit_translation/google_mlkit_translation.dart';
-import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
-import 'translation_state.dart';
 import 'package:ai_partner/logic/services/ml/translation_service.dart';
+import 'package:ai_partner/logic/services/ml/language_id_service.dart';
 
 class TranslationCubit extends Cubit<TranslationState> {
-  final _service = TranslationService();
+  final LanguageIdService _languageService;
+  final TranslationService _translationService;
   final HapticService _hapticService;
   final SoundService _soundService;
   final NotificationService _notificationService;
 
-  final _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
-
   TranslationCubit(
+    this._languageService,
+    this._translationService,
     this._hapticService,
     this._soundService,
     this._notificationService,
@@ -31,10 +33,7 @@ class TranslationCubit extends Cubit<TranslationState> {
     await _hapticService.triggerLoading();
 
     try {
-      final String languageCode = await _languageIdentifier.identifyLanguage(
-        text,
-      );
-      final finalCode = languageCode == 'und' ? 'en' : languageCode;
+      final String finalCode = await _languageService.identifyLanguage(text);
 
       await _hapticService.trigger();
       emit(TranslationDetected(finalCode, text));
@@ -46,13 +45,6 @@ class TranslationCubit extends Cubit<TranslationState> {
       );
       _soundService.playSuccess();
     } catch (e) {
-      // ✅ Error Notification
-      await _notificationService.showNotification(
-        id: 101,
-        title: "Detection Failed",
-        body: errorMessage,
-      );
-      await _hapticService.triggerError();
       emit(TranslationError(errorMessage));
       _soundService.playError();
     }
@@ -60,8 +52,8 @@ class TranslationCubit extends Cubit<TranslationState> {
 
   Future<void> translateText({
     required String text,
-    required TranslateLanguage source,
-    required TranslateLanguage target,
+    required String sourceCode, // Changed from TranslateLanguage
+    required String targetCode, // Changed from TranslateLanguage
     required String translatingMessage,
     required String downloadingMessage,
     required String errorMessage,
@@ -69,25 +61,27 @@ class TranslationCubit extends Cubit<TranslationState> {
     if (text.trim().isEmpty) return;
 
     try {
-      final isDownloaded = await _service.isLanguageDownloaded(target);
+      final isDownloaded = await _translationService.isLanguageDownloaded(
+        targetCode,
+      );
 
       if (!isDownloaded) {
         await _hapticService.triggerLoading();
-        emit(TranslationLoading("$downloadingMessage ${target.name}..."));
+        emit(TranslationLoading("$downloadingMessage $targetCode..."));
       } else {
         emit(TranslationLoading(translatingMessage));
       }
 
-      final result = await _service.translate(
+      final result = await _translationService.translate(
         text: text,
-        source: source,
-        target: target,
+        sourceCode: sourceCode,
+        targetCode: targetCode,
       );
 
       await _notificationService.showNotification(
         id: 2,
         title: "Translation Ready",
-        body: "Successfully translated to ${target.name}.",
+        body: "Successfully translated to ${targetCode.toUpperCase()}.",
       );
 
       await _hapticService.triggerSuccess();
@@ -95,17 +89,11 @@ class TranslationCubit extends Cubit<TranslationState> {
       emit(
         TranslationSuccess(
           translatedText: result,
-          sourceLang: source.name,
-          targetLang: target.name,
+          sourceLang: sourceCode,
+          targetLang: targetCode,
         ),
       );
     } catch (e) {
-      // ✅ Error Notification
-      await _notificationService.showNotification(
-        id: 102,
-        title: "Translation Error",
-        body: "Could not complete translation. Please check your connection.",
-      );
       await _hapticService.triggerError();
       _soundService.playError();
       emit(TranslationError(errorMessage));
@@ -113,10 +101,4 @@ class TranslationCubit extends Cubit<TranslationState> {
   }
 
   void reset() => emit(TranslationInitial());
-
-  @override
-  Future<void> close() {
-    _languageIdentifier.close();
-    return super.close();
-  }
 }

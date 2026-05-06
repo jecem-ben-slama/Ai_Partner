@@ -110,7 +110,7 @@ class ScanFlags {
       canTranslate: !isSpecial && text.length > 2,
 
       // 🔥 FIX 2: TTS should ALWAYS work for readable text
-      canTts: !isSpecial && text.length > 0,
+      canTts: !isSpecial && text.isNotEmpty,
     );
   }
 

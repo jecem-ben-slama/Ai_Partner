@@ -179,7 +179,7 @@ Widget _copyPasswordButton(
   child: Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+      color: Theme.of(context).colorScheme.primary,
       borderRadius: BorderRadius.circular(8),
     ),
     child: Row(
