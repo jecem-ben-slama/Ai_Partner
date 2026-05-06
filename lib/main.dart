@@ -13,7 +13,7 @@ import 'package:ai_partner/logic/services/sound_service.dart';
 import 'package:ai_partner/logic/services/notification_service.dart';
 
 //* Repository imports
-import 'package:ai_partner/logic/repo/scan_repository.dart'; 
+import 'package:ai_partner/logic/repo/scan_repository.dart';
 
 //* Cubit imports
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
@@ -38,6 +38,7 @@ void main() async {
   final settingsService = SettingsService(prefs);
   final ttsService = TtsService();
   final hapticService = HapticService();
+  
 
   hapticService.updateSetting(settingsService.hapticLevel);
 
@@ -67,7 +68,10 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => SettingsCubit(settingsService, hapticService),
+          create: (context) => SettingsCubit(
+            settingsService,
+            hapticService,
+          ),
         ),
       ],
       child: MultiRepositoryProvider(
@@ -83,7 +87,6 @@ class MyApp extends StatelessWidget {
                   ..initNotification(),
           ),
           RepositoryProvider(create: (_) => UniversalScannerService()),
-          // ✅ FIX: Replaced StorageService with ScanRepository
           RepositoryProvider(create: (_) => ScanRepository()),
         ],
         child: MultiBlocProvider(
@@ -119,6 +122,7 @@ class MyApp extends StatelessWidget {
                 context.read<SoundService>(),
               ),
             ),
+            
           ],
           child: SafeArea(child: const AppView()),
         ),

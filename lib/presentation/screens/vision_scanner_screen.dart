@@ -137,14 +137,33 @@ class VisionScannerScreen extends StatelessWidget {
     }
   }
 
-  Future<CroppedFile?> _cropImage(String path, BuildContext context) async {
+Future<CroppedFile?> _cropImage(String path, BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
     return await ImageCropper().cropImage(
       sourcePath: path,
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: AppLocalizations.of(context)!.selectZoneLabel,
+          toolbarTitle: l10n.selectZoneLabel,
+          toolbarColor: Theme.of(context).colorScheme.primary,
+          toolbarWidgetColor: Colors.white,
+          // Removed aspectRatioPresets from the top level
+          // On Android, presets are defined here:
+          aspectRatioPresets: [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+          ],
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false, // This allows free-form scaling
         ),
-        IOSUiSettings(title: AppLocalizations.of(context)!.selectZoneLabel),
+        IOSUiSettings(
+          title: l10n.selectZoneLabel,
+          aspectRatioLockEnabled: false, // Allows free-form scaling on iOS
+          // iOS handles presets automatically if lock is disabled
+        ),
       ],
     );
   }

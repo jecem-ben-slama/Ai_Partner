@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class SettingsCubit extends Cubit<SettingsState> {
   final SettingsService _service;
   final HapticService _hapticService;
-
   SettingsCubit(this._service, this._hapticService)
     : super(
         SettingsState(
@@ -19,7 +18,6 @@ class SettingsCubit extends Cubit<SettingsState> {
           notificationsEnabled: _service.notificationsEnabled,
         ),
       );
-
   void toggleTheme() async {
     final newMode = state.themeMode == ThemeMode.light
         ? ThemeMode.dark
@@ -63,6 +61,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     await _service.clearAll();
 
     await _service.clearDatabase();
+  
     _hapticService.triggerSuccess();
 // Inside resetSettings
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,7 +77,6 @@ class SettingsCubit extends Cubit<SettingsState> {
           ),
         );    }
   });
-    // 4. Emit the factory-default state
   
   }
 }
