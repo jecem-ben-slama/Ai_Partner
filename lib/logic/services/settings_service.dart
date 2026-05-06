@@ -1,45 +1,45 @@
+import 'package:ai_partner/logic/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'haptic_service.dart';
+import 'package:ai_partner/logic/services/haptic_service.dart';
 
 class SettingsService {
   final SharedPreferences _prefs;
+final DatabaseService _dbService = DatabaseService();
   SettingsService(this._prefs);
 
-  static const _themeKey = 'themeMode';
-  static const _langKey = 'languageCode';
-  static const _onboardingKey = 'showOnboarding';
-  static const _hapticLevelKey = 'hapticLevel';
-  static const _soundEnabledKey = 'soundEnabled';
-  static const _notificationsEnabledKey = 'notificationsEnabled';
-
-  ThemeMode get themeMode => ThemeMode.values[_prefs.getInt(_themeKey) ?? 1];
-  Locale get locale => Locale(_prefs.getString(_langKey) ?? 'en');
-  bool get showOnboarding => _prefs.getBool(_onboardingKey) ?? true;
-
-  HapticIntensity get hapticLevel {
-    final index = _prefs.getInt(_hapticLevelKey) ?? 2;
-    return HapticIntensity.values[index];
-  }
-
-  bool get soundEnabled => _prefs.getBool(_soundEnabledKey) ?? true;
+  // --- Existing Getters ---
+  ThemeMode get themeMode => ThemeMode.values[_prefs.getInt('themeMode') ?? 0];
+  Locale get locale => Locale(_prefs.getString('languageCode') ?? 'en');
+  bool get showOnboarding => _prefs.getBool('showOnboarding') ?? true;
+  bool get soundEnabled => _prefs.getBool('soundEnabled') ?? true;
   bool get notificationsEnabled =>
-      _prefs.getBool(_notificationsEnabledKey) ?? true;
+      _prefs.getBool('notificationsEnabled') ?? true;
+  HapticIntensity get hapticLevel =>
+      HapticIntensity.values[_prefs.getInt('hapticLevel') ?? 1];
 
+  // --- Existing Setters ---
   Future<void> setThemeMode(ThemeMode mode) =>
-      _prefs.setInt(_themeKey, mode.index);
-  Future<void> setLocale(String langCode) =>
-      _prefs.setString(_langKey, langCode);
-  Future<void> setOnboardingComplete() => _prefs.setBool(_onboardingKey, false);
-
+      _prefs.setInt('themeMode', mode.index);
+  Future<void> setLocale(String lang) => _prefs.setString('languageCode', lang);
+  Future<void> setOnboardingComplete() =>
+      _prefs.setBool('showOnboarding', false);
+  Future<void> setSoundEnabled(bool val) => _prefs.setBool('soundEnabled', val);
+  Future<void> setNotificationsEnabled(bool val) =>
+      _prefs.setBool('notificationsEnabled', val);
   Future<void> setHapticLevel(HapticIntensity level) =>
-      _prefs.setInt(_hapticLevelKey, level.index);
+      _prefs.setInt('hapticLevel', level.index);
 
-  Future<void> setSoundEnabled(bool enabled) =>
-      _prefs.setBool(_soundEnabledKey, enabled);
-
-  Future<void> setNotificationsEnabled(bool enabled) =>
-      _prefs.setBool(_notificationsEnabledKey, enabled);
-
-  Future<void> clearAll() => _prefs.clear();
+  /// Clears all SharedPreferences (Theme, Language, Onboarding status)
+  Future<void> clearAll() async {
+    await _prefs.clear();
+  }
+Future<void> clearDatabase() async {
+    try {
+      // Use the Singleton's reset logic instead of manual file manipulation
+      await _dbService.resetDatabase();
+    } catch (e) {
+      debugPrint("Error clearing database: $e");
+    }
+  }
 }

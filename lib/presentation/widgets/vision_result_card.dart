@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_state.dart';
@@ -29,7 +31,6 @@ class VisionResultCard extends StatelessWidget {
     }
   }
 
-  //! to be reused for rename dialog
   void _showSaveDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
@@ -43,11 +44,7 @@ class VisionResultCard extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           l10n.saveitemLabel,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.brightness == Brightness.light
-                ? Colors.black
-                : Colors.white,
-          ),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         ),
         content: TextField(
           controller: nameController,
@@ -60,12 +57,7 @@ class VisionResultCard extends StatelessWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               l10n.cancel,
-              style: TextStyle(
-                color:
-                    Theme.of(context).colorScheme.brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-              ),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
           TextButton(
@@ -83,12 +75,7 @@ class VisionResultCard extends StatelessWidget {
             },
             child: Text(
               l10n.confirm,
-              style: TextStyle(
-                color:
-                    Theme.of(context).colorScheme.brightness == Brightness.light
-                    ? Colors.black
-                    : Colors.white,
-              ),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         ],
@@ -123,7 +110,12 @@ class VisionResultCard extends StatelessWidget {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                Text(message, style: const TextStyle(color: Colors.white)),
+                Flexible(
+                  child: Text(
+                    message,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
               ],
             ),
           ),
@@ -132,8 +124,6 @@ class VisionResultCard extends StatelessWidget {
     );
 
     overlay.insert(overlayEntry);
-
-    // Remove it after 2 seconds
     Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
   }
 
@@ -153,7 +143,8 @@ class VisionResultCard extends StatelessWidget {
         // 1. Check if this specific result ID is in the saved history
         bool isSaved = false;
         if (state is SavedScanLoaded) {
-          isSaved = state.savedScans.any((scan) => scan['id'] == result.id);
+          // Use result.id (dot notation) instead of result['id']
+          isSaved = state.savedScans.any((scan) => scan.id == result.id);
         }
 
         return Card(
@@ -187,7 +178,7 @@ class VisionResultCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 fontSize: 13,
               ),
             ),
@@ -221,12 +212,9 @@ class VisionResultCard extends StatelessWidget {
                                 ClipboardData(text: result.content),
                               );
                               context.read<HapticService>().trigger;
-
                               _showTopNotification(context, l10n.copiedLabel);
                             },
                           ),
-
-                          // 2. TOGGLE SAVE BUTTON: UI reacts to isSaved
                           ActionButton(
                             icon: isSaved
                                 ? Icons.bookmark
@@ -235,27 +223,22 @@ class VisionResultCard extends StatelessWidget {
                                 ? Theme.of(context).colorScheme.primary
                                 : null,
                             onTap: () {
+                              context.read<HapticService>().trigger;
                               if (isSaved) {
-                                // Unsave logic
                                 context.read<SavedScanCubit>().deleteItem(
                                   result.id,
                                   errorMessage: l10n.deleteError,
                                 );
-                                context.read<HapticService>().trigger;
                                 context.read<SoundService>().playTap();
                               } else {
-                                // Save logic
                                 _showSaveDialog(context);
                               }
                             },
                           ),
-
                           ActionButton(
                             icon: Icons.share_outlined,
-                            // ignore: deprecated_member_use
                             onTap: () => Share.share(result.content),
                           ),
-
                           if (result.type == VisionType.text)
                             ActionButton(
                               icon: Icons.record_voice_over_rounded,
@@ -267,7 +250,6 @@ class VisionResultCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-
                           if (canTranslate)
                             ActionButton(
                               icon: Icons.g_translate_rounded,
@@ -280,7 +262,6 @@ class VisionResultCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-
                           if (isPhone)
                             ActionButton(
                               icon: Icons.call,
@@ -288,7 +269,6 @@ class VisionResultCard extends StatelessWidget {
                                 "tel:${result.content.replaceAll(RegExp(r'[\s\-\(\)]'), '')}",
                               ),
                             ),
-
                           if (isUrl)
                             ActionButton(
                               icon: Icons.open_in_browser,

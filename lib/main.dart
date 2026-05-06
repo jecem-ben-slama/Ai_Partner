@@ -8,10 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/logic/services/universal_scanner_service.dart';
 import 'package:ai_partner/logic/services/settings_service.dart';
-import 'package:ai_partner/logic/services/storage_service.dart';
 import 'package:ai_partner/logic/services/tts_service.dart';
 import 'package:ai_partner/logic/services/sound_service.dart';
-import 'package:ai_partner/logic/services/notification_service.dart'; // Added NotificationService import
+import 'package:ai_partner/logic/services/notification_service.dart';
+
+//* Repository imports
+import 'package:ai_partner/logic/repo/scan_repository.dart'; 
 
 //* Cubit imports
 import 'package:ai_partner/logic/cubit/translation/translation_cubit.dart';
@@ -28,19 +30,15 @@ import 'package:ai_partner/presentation/screens/navbar_screen.dart';
 import 'package:ai_partner/presentation/screens/onboarding_screen.dart';
 
 void main() async {
-  // Ensure native bindings are ready
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // Initialize SharedPreferences
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  // Initialize Core Services
   final settingsService = SettingsService(prefs);
   final ttsService = TtsService();
   final hapticService = HapticService();
 
-  // Pre-sync HapticService with saved user preference
   hapticService.updateSetting(settingsService.hapticLevel);
 
   runApp(
@@ -67,31 +65,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      // 1. First, provide SettingsCubit (needed by Sound and Notification services)
       providers: [
         BlocProvider(
           create: (context) => SettingsCubit(settingsService, hapticService),
         ),
       ],
       child: MultiRepositoryProvider(
-        // 2. Provide Services.
         providers: [
           RepositoryProvider.value(value: hapticService),
           RepositoryProvider.value(value: ttsService),
           RepositoryProvider(
             create: (context) => SoundService(context.read<SettingsCubit>()),
           ),
-          // Added NotificationService initialization
           RepositoryProvider(
             create: (context) =>
                 NotificationService(context.read<SettingsCubit>())
                   ..initNotification(),
           ),
           RepositoryProvider(create: (_) => UniversalScannerService()),
-          RepositoryProvider(create: (_) => StorageService()),
+          // ✅ FIX: Replaced StorageService with ScanRepository
+          RepositoryProvider(create: (_) => ScanRepository()),
         ],
         child: MultiBlocProvider(
-          // 3. Provide all other Cubits
           providers: [
             BlocProvider(
               create: (context) => VisionCubit(
@@ -101,11 +96,13 @@ class MyApp extends StatelessWidget {
                 context.read<NotificationService>(),
               ),
             ),
+            // ✅ FIX: Added NotificationService to SavedScanCubit and changed repo
             BlocProvider(
               create: (context) => SavedScanCubit(
-                context.read<StorageService>(),
+                context.read<ScanRepository>(), // Using SQLite Repository
                 context.read<HapticService>(),
                 context.read<SoundService>(),
+                context.read<NotificationService>(), // Added missing dependency
               )..loadHistory(),
             ),
             BlocProvider(
@@ -123,7 +120,7 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ],
-          child: const SafeArea(child: AppView()),
+          child: SafeArea(child: const AppView()),
         ),
       ),
     );

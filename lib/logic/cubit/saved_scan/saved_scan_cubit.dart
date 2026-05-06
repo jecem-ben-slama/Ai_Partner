@@ -1,24 +1,28 @@
+import 'package:ai_partner/logic/repo/scan_repository.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
+import 'package:ai_partner/logic/services/notification_service.dart';
 import 'package:ai_partner/logic/services/sound_service.dart';
-import 'package:ai_partner/logic/services/storage_service.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_partner/models/scan_result_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'saved_scan_state.dart';
 
 class SavedScanCubit extends Cubit<SavedScanState> {
-  final StorageService _storageService;
+  final ScanRepository _scanRepository;
   final SoundService _soundService;
   final HapticService _hapticService;
+  final NotificationService _notificationService;
 
-  SavedScanCubit(this._storageService, this._hapticService, this._soundService)
-    : super(SavedScanInitial());
+  SavedScanCubit(
+    this._scanRepository,
+    this._hapticService,
+    this._soundService,
+    this._notificationService,
+  ) : super(SavedScanInitial());
 
   Future<void> loadHistory({String? errorMessage}) async {
     emit(SavedScanLoading());
     try {
-      final scans = await _storageService.getHistory();
-      _hapticService.trigger();
-      _soundService.playSuccess();
+      final scans = await _scanRepository.getScans();
       emit(SavedScanLoaded(scans));
     } catch (e) {
       _hapticService.triggerError();
@@ -32,68 +36,125 @@ class SavedScanCubit extends Cubit<SavedScanState> {
     required String errorMessage,
   }) async {
     try {
-      final resultsJson = results.map((res) => res.toJson()).toList();
-      await _storageService.saveScan(resultsJson);
+      if (results.isNotEmpty) {
+        await _scanRepository.insertScan(results.first);
+
+        await _notificationService.showNotification(
+          id: 4,
+          title: "Scan Saved",
+          body: "Successfully added to your offline history.",
+        );
+
+        _soundService.playSuccess();
+        _hapticService.triggerSuccess();
+      }
+
       await loadHistory();
     } catch (e) {
-       _hapticService.triggerError();
+      await _notificationService.showNotification(
+        id: 104,
+        title: "Save Error",
+        body: "Failed to save the scan locally.",
+      );
+      _hapticService.triggerError();
       _soundService.playError();
       emit(SavedScanError(errorMessage));
-      
     }
   }
 
   void toggleFavorite(String id) async {
     if (state is SavedScanLoaded) {
-      final List<Map<String, dynamic>> currentHistory = List.from(
-        (state as SavedScanLoaded).savedScans,
-      );
+      try {
+        final currentScans = (state as SavedScanLoaded).savedScans;
+        final scan = currentScans.firstWhere((s) => s.id == id);
 
-      for (var entry in currentHistory) {
-        if (entry['id'] == id) {
-          final results = entry['results'] as List;
-          if (results.isNotEmpty) {
-            results[0]['isFavorite'] = !(results[0]['isFavorite'] ?? false);
-          }
-        }
+        final newStatus = !scan.isFavorite;
+        await _scanRepository.toggleFavorite(id, newStatus);
+
+        _hapticService.triggerSuccess();
+        _soundService.playSuccess();
+
+        await loadHistory();
+      } catch (e) {
+        _hapticService.triggerError();
       }
-
-      await _storageService.saveFullHistory(currentHistory);
-       _hapticService.triggerSuccess();
-      _soundService.playSuccess();
-      emit(SavedScanLoaded(currentHistory));
     }
   }
 
   void updateLabel(String id, String newLabel) async {
     if (state is SavedScanLoaded) {
-      await _storageService.updateScanLabel(id, newLabel);
-      final updatedHistory = await _storageService.getHistory();
-       _hapticService.trigger();
-      _soundService.playSuccess();
-      emit(SavedScanLoaded(updatedHistory));
+      try {
+        await _scanRepository.updateScanTitle(id, newLabel);
+
+        _hapticService.trigger();
+        _soundService.playSuccess();
+
+        await loadHistory();
+      } catch (e) {
+        _hapticService.triggerError();
+      }
     }
   }
 
-  Future<void> deleteItem(String id, {required String errorMessage}) async {
+  Future<void> deleteItem(String id, {String? errorMessage}) async {
     try {
-      await _storageService.deleteScanById(id);
+      await _scanRepository.deleteScan(id);
+
+      // Feedback for success
+      _hapticService.triggerSuccess();
+      _soundService.playSuccess();
+
+      await _notificationService.showNotification(
+        id: 5,
+        title: "Deleted",
+        body: "Item removed from history.",
+      );
+
       await loadHistory();
     } catch (e) {
-       _hapticService.triggerError();
+      // Feedback for error
+      _hapticService.triggerError();
       _soundService.playError();
-      emit(SavedScanError(errorMessage));
+
+      await _notificationService.showNotification(
+        id: 105,
+        title: "Delete Failed",
+        body: "Could not remove the item from the database.",
+      );
+
+      emit(SavedScanError(errorMessage ?? "Error deleting item"));
     }
   }
 
-  Future<void> clearAll({required String errorMessage}) async {
+  Future<void> clearAll({String? errorMessage}) async {
     try {
-      await _storageService.deleteAll();
+      await _scanRepository.deleteAll();
+
+      _hapticService.triggerSuccess();
+      _soundService.playSuccess();
+
+      await _notificationService.showNotification(
+        id: 6,
+        title: "History Cleared",
+        body: "All saved scans have been deleted.",
+      );
+
       emit(SavedScanLoaded(const []));
     } catch (e) {
-      emit(SavedScanError(errorMessage));
-       _hapticService.triggerError();
+      _hapticService.triggerError();
       _soundService.playError();
+
+      await _notificationService.showNotification(
+        id: 106,
+        title: "Error",
+        body: "Failed to clear the local database.",
+      );
+      emit(SavedScanError(errorMessage ?? "Error clearing history"));
     }
+  }
+
+  /// Use this for your Settings Page reset logic
+  void clearAllLocalData() {
+    emit(SavedScanLoaded(const []));
   }
 }

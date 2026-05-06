@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:ai_partner/core/l10n/app_localizations.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
 import 'package:ai_partner/logic/services/sound_service.dart';
@@ -9,12 +11,11 @@ import 'package:ai_partner/presentation/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SavedScanCard extends StatelessWidget {
-  final Map<String, dynamic> scan;
+  final VisionResult scan; // The model you provided
 
   const SavedScanCard({super.key, required this.scan});
 
@@ -23,26 +24,21 @@ class SavedScanCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    // Data Parsing
-    final DateTime date = DateTime.parse(
-      scan['timestamp'] ?? DateTime.now().toString(),
-    );
-    final List<VisionResult> results = (scan['results'] as List? ?? [])
-        .map((r) => VisionResult.fromJson(r))
-        .toList();
-
-    if (results.isEmpty) return const SizedBox.shrink();
-
-    final firstRes = results.first;
-    final bool isFavorite = firstRes.isFavorite;
+    // Since 'scan' is a VisionResult, we use its properties directly
+    final bool isFavorite = scan.isFavorite;
+    final String displayLabel = scan.label ?? "Untitled";
+    final String displayContent = scan.content.replaceAll('\n', ' ');
 
     return Dismissible(
-      key: Key('dismiss_${scan['id']}'),
+      key: Key('dismiss_${scan.id}'),
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
-        _showDeleteConfirm(context);
-        context.read<HapticService>().triggerSuccess();
-        return null;
+        final confirmed = await _showDeleteConfirm(context);
+        if (confirmed) {
+          // ignore: use_build_context_synchronously
+          context.read<HapticService>().triggerSuccess();
+        }
+        return confirmed;
       },
       background: _buildDeleteBackground(),
       child: Card(
@@ -54,24 +50,23 @@ class SavedScanCard extends StatelessWidget {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => _showScanDetail(context, results, l10n),
+          onTap: () => _showScanDetail(context, scan, l10n),
           onLongPress: () {
             context.read<HapticService>().triggerLoading();
-
-            _showRenameDialog(context, firstRes.label ?? "", scan['id'], l10n);
+            _showRenameDialog(context, scan.label ?? "", scan.id, l10n);
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
               children: [
-                _buildLeadingIcon(context, firstRes),
+                _buildLeadingIcon(context, scan.type),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        firstRes.label ?? "Untitled",
+                        displayLabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -81,7 +76,7 @@ class SavedScanCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        firstRes.content.replaceAll('\n', ' '),
+                        displayContent,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -89,19 +84,10 @@ class SavedScanCard extends StatelessWidget {
                           fontSize: 13,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        DateFormat('MMM dd • HH:mm').format(date),
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     ],
                   ),
                 ),
-                _buildTrailingActions(context, scan['id'], isFavorite),
+                _buildTrailingActions(context, scan.id, isFavorite),
               ],
             ),
           ),
@@ -110,13 +96,24 @@ class SavedScanCard extends StatelessWidget {
     );
   }
 
-  // --- Sub-Widgets for Clarity ---
-
-  Widget _buildLeadingIcon(BuildContext context, VisionResult res) {
-    IconData iconData = Icons.text_snippet_outlined;
-    if (res.type == VisionType.url) iconData = Icons.link_rounded;
-    if (res.type == VisionType.phone) iconData = Icons.phone_enabled_rounded;
-    if (res.type == VisionType.barcode) iconData = Icons.qr_code_rounded;
+  Widget _buildLeadingIcon(BuildContext context, VisionType type) {
+    IconData iconData;
+    switch (type) {
+      case VisionType.url:
+        iconData = Icons.language;
+        break;
+      case VisionType.phone:
+        iconData = Icons.phone;
+        break;
+      case VisionType.barcode:
+        iconData = Icons.qr_code_2;
+        break;
+      case VisionType.qr:
+        iconData = Icons.qr_code;
+        break;
+      default:
+        iconData = Icons.text_snippet_outlined;
+    }
 
     return Container(
       width: 48,
@@ -139,7 +136,7 @@ class SavedScanCard extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () {
-            context.read<HapticService>().trigger;
+            context.read<HapticService>().trigger();
             context.read<SavedScanCubit>().toggleFavorite(id);
           },
           icon: Icon(
@@ -166,18 +163,9 @@ class SavedScanCard extends StatelessWidget {
     );
   }
 
-  // --- Utility Methods ---
-
-  Future<void> _launch(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
-
   void _showScanDetail(
     BuildContext context,
-    List<VisionResult> results,
+    VisionResult result,
     AppLocalizations l10n,
   ) {
     showModalBottomSheet(
@@ -188,62 +176,46 @@ class SavedScanCard extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
+        initialChildSize: 0.4,
         maxChildSize: 0.9,
         expand: false,
-        builder: (_, scrollController) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+        builder: (_, scrollController) => SingleChildScrollView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                controller: scrollController,
-                padding: const EdgeInsets.all(24),
-                itemCount: results.length,
-                separatorBuilder: (_, _) => const Divider(height: 40),
-                itemBuilder: (ctx, i) =>
-                    _buildDetailItem(context, sheetContext, results[i], l10n),
+              const SizedBox(height: 24),
+              Text(
+                result.label?.toUpperCase() ?? "CONTENT",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailItem(
-    BuildContext context,
-    BuildContext sheetCtx,
-    VisionResult res,
-    AppLocalizations l10n,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          res.label?.toUpperCase() ?? "CONTENT",
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.1,
+              const SizedBox(height: 12),
+              SelectableText(
+                result.content,
+                style: const TextStyle(fontSize: 16, height: 1.5),
+              ),
+              const SizedBox(height: 24),
+              _buildActionRow(context, sheetContext, result, l10n),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        SelectableText(
-          res.content,
-          style: const TextStyle(fontSize: 16, height: 1.5),
-        ),
-        const SizedBox(height: 16),
-        _buildActionRow(context, sheetCtx, res, l10n),
-      ],
+      ),
     );
   }
 
@@ -262,11 +234,13 @@ class SavedScanCard extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children: [
-        if (isText)
+        if (isText ||
+            res.type == VisionType.barcode ||
+            res.type == VisionType.qr)
           ActionButton(
             icon: Icons.g_translate_rounded,
             onTap: () {
-               context.read<SoundService>().playTap();
+              context.read<SoundService>().playTap();
               context.read<HapticService>().trigger();
               Navigator.pop(sheetCtx);
               Navigator.push(
@@ -279,9 +253,9 @@ class SavedScanCard extends StatelessWidget {
           ),
         if (isText)
           ActionButton(
-            icon: Icons.volume_up_rounded,
+            icon: Icons.record_voice_over_rounded,
             onTap: () {
-               context.read<SoundService>().playTap();
+              context.read<SoundService>().playTap();
               context.read<HapticService>().trigger();
               Navigator.pop(sheetCtx);
               Navigator.push(
@@ -295,24 +269,34 @@ class SavedScanCard extends StatelessWidget {
         if (isUrl)
           ActionButton(
             icon: Icons.open_in_browser_rounded,
-            onTap: () => _launch(res.content),
+            onTap: () async {
+              final uri = Uri.parse(res.content);
+              if (await canLaunchUrl(uri)) await launchUrl(uri);
+            },
           ),
         if (isPhone)
           ActionButton(
             icon: Icons.call_rounded,
-            onTap: () => _launch("tel:${res.content}"),
+            onTap: () async {
+              final uri = Uri.parse(
+                "tel:${res.content.replaceAll(RegExp(r'\s+'), '')}",
+              );
+              if (await canLaunchUrl(uri)) await launchUrl(uri);
+            },
           ),
         ActionButton(
           icon: Icons.copy_rounded,
           onTap: () {
             Clipboard.setData(ClipboardData(text: res.content));
+            context.read<HapticService>().trigger();
             Navigator.pop(sheetCtx);
-            _showTopNotification(context, l10n.copiedLabel);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(l10n.copiedLabel)));
           },
         ),
         ActionButton(
           icon: Icons.share_rounded,
-          // ignore: deprecated_member_use
           onTap: () => Share.share(res.content),
         ),
       ],
@@ -321,70 +305,33 @@ class SavedScanCard extends StatelessWidget {
 
   Future<bool> _showDeleteConfirm(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.clearscanTitle),
-        content: Text(l10n.clearscanMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<SavedScanCubit>().deleteItem(
-                scan['id'],
-                errorMessage: l10n.deleteError,
-              );
-              Navigator.pop(ctx, true);
-            },
-            child: Text(
-              l10n.confirm,
-              style: const TextStyle(color: Colors.redAccent),
-            ),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
-
-  void _showTopNotification(BuildContext context, String message) {
-    final overlay = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 10,
-        left: 20,
-        right: 20,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF161925),
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 10),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Colors.greenAccent,
-                  size: 20,
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.clearscanTitle),
+            content: Text(l10n.clearscanMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<SavedScanCubit>().deleteItem(
+                    scan.id,
+                    errorMessage: l10n.deleteError,
+                  );
+                  Navigator.pop(ctx, true);
+                },
+                child: Text(
+                  l10n.confirm,
+                  style: const TextStyle(color: Colors.redAccent),
                 ),
-                const SizedBox(width: 12),
-                Text(message, style: const TextStyle(color: Colors.white)),
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
-      ),
-    );
-    overlay.insert(overlayEntry);
-    Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
+        ) ??
+        false;
   }
 
   void _showRenameDialog(
@@ -398,7 +345,11 @@ class SavedScanCard extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.renameScanLabel),
-        content: TextField(controller: controller, autofocus: true),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.nameLabel),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -407,8 +358,6 @@ class SavedScanCard extends StatelessWidget {
           TextButton(
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
-                context.read<HapticService>().trigger;
-
                 context.read<SavedScanCubit>().updateLabel(
                   scanId,
                   controller.text.trim(),

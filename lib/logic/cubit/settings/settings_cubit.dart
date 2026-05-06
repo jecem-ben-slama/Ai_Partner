@@ -28,13 +28,11 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(themeMode: newMode));
   }
 
-  // New: Toggle Sound
   void toggleSound(bool enabled) async {
     await _service.setSoundEnabled(enabled);
     emit(state.copyWith(soundEnabled: enabled));
   }
 
-  // New: Toggle Notifications
   void toggleNotifications(bool enabled) async {
     await _service.setNotificationsEnabled(enabled);
     emit(state.copyWith(notificationsEnabled: enabled));
@@ -60,17 +58,27 @@ class SettingsCubit extends Cubit<SettingsState> {
     _hapticService.trigger();
   }
 
+  /// Reset the app by clearing preferences and deleting the SQLite database.
   void resetSettings() async {
     await _service.clearAll();
-    emit(
-      SettingsState(
-        themeMode: ThemeMode.light,
-        locale: const Locale('en'),
-        showOnboarding: true,
-        hapticLevel: HapticIntensity.medium,
-        soundEnabled: true,
-        notificationsEnabled: true,
-      ),
-    );
+
+    await _service.clearDatabase();
+    _hapticService.triggerSuccess();
+// Inside resetSettings
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!isClosed) {
+        emit(
+          SettingsState(
+            themeMode: ThemeMode.light, // Default to light
+            locale: const Locale('en'),
+            showOnboarding: true,
+            hapticLevel: HapticIntensity.medium,
+            soundEnabled: true,
+            notificationsEnabled: true,
+          ),
+        );    }
+  });
+    // 4. Emit the factory-default state
+  
   }
 }
