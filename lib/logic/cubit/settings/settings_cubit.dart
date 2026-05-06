@@ -56,27 +56,25 @@ class SettingsCubit extends Cubit<SettingsState> {
     _hapticService.trigger();
   }
 
-  /// Reset the app by clearing preferences and deleting the SQLite database.
+ /// Reset the app by clearing preferences and deleting the SQLite database.
   void resetSettings() async {
     await _service.clearAll();
-
     await _service.clearDatabase();
-  
     _hapticService.triggerSuccess();
-// Inside resetSettings
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!isClosed) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed) {
         emit(
           SettingsState(
-            themeMode: ThemeMode.light, // Default to light
+            themeMode: ThemeMode.light,
             locale: const Locale('en'),
             showOnboarding: true,
             hapticLevel: HapticIntensity.medium,
             soundEnabled: true,
             notificationsEnabled: true,
           ),
-        );    }
-  });
-  
+        );
+      }
+    });
   }
 }

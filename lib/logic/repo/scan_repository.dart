@@ -5,7 +5,6 @@ import 'package:ai_partner/models/scan_result_model.dart';
 class ScanRepository {
   final DatabaseService _dbService = DatabaseService();
 
-  /// Saves a VisionResult to SQLite without changing the model.
   Future<void> insertScan(VisionResult result) async {
     final db = await _dbService.database;
 
@@ -19,7 +18,6 @@ class ScanRepository {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  /// Retrieves scans and converts them back into original VisionResult objects.
   Future<List<VisionResult>> getScans() async {
     final db = await _dbService.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -48,6 +46,17 @@ class ScanRepository {
     );
   }
 
+  // ← NEW
+  Future<void> updateScanContent(String uuid, String newContent) async {
+    final db = await _dbService.database;
+    await db.update(
+      'scans',
+      {'content': newContent},
+      where: 'id_string = ?',
+      whereArgs: [uuid],
+    );
+  }
+
   Future<void> toggleFavorite(String uuid, bool isFavorite) async {
     final db = await _dbService.database;
     await db.update(
@@ -63,7 +72,6 @@ class ScanRepository {
     await db.delete('scans', where: 'id_string = ?', whereArgs: [uuid]);
   }
 
-  /// ✅ New: Clears the entire scans table.
   Future<void> deleteAll() async {
     final db = await _dbService.database;
     await db.delete('scans');

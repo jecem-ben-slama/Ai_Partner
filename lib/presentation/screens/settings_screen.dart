@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:ai_partner/core/l10n/app_localizations.dart';
+import 'package:ai_partner/logic/cubit/saved_scan/saved_scan_cubit.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_cubit.dart';
 import 'package:ai_partner/logic/cubit/settings/settings_state.dart';
 import 'package:ai_partner/logic/services/haptic_service.dart';
@@ -335,6 +336,10 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () {
               context.read<HapticService>().trigger();
               context.read<SettingsCubit>().resetSettings();
+              context
+                  .read<SavedScanCubit>()
+                  .clearAllLocalData(); // ← clears the in-memory list
+
               Navigator.pop(context);
             },
             child: Text(

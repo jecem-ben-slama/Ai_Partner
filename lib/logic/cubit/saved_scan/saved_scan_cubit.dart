@@ -96,11 +96,26 @@ class SavedScanCubit extends Cubit<SavedScanState> {
     }
   }
 
+  // ← NEW
+  void updateContent(String id, String newContent) async {
+    if (state is SavedScanLoaded) {
+      try {
+        await _scanRepository.updateScanContent(id, newContent);
+
+        _hapticService.trigger();
+        _soundService.playSuccess();
+
+        await loadHistory();
+      } catch (e) {
+        _hapticService.triggerError();
+      }
+    }
+  }
+
   Future<void> deleteItem(String id, {String? errorMessage}) async {
     try {
       await _scanRepository.deleteScan(id);
 
-      // Feedback for success
       _hapticService.triggerSuccess();
       _soundService.playSuccess();
 
@@ -112,7 +127,6 @@ class SavedScanCubit extends Cubit<SavedScanState> {
 
       await loadHistory();
     } catch (e) {
-      // Feedback for error
       _hapticService.triggerError();
       _soundService.playError();
 
@@ -153,7 +167,6 @@ class SavedScanCubit extends Cubit<SavedScanState> {
     }
   }
 
-  /// Use this for your Settings Page reset logic
   void clearAllLocalData() {
     emit(SavedScanLoaded(const []));
   }
