@@ -114,6 +114,7 @@ lib/
 │   ├── cubit/          # Feature-specific Cubits (Translation, TTS, Settings)
 │   ├── repo/           # Repository layer for data abstraction
 │   └── services/       # ML logic, Haptics, Sound, and Notifications
+├── models/             # App-wide data models & entities 
 ├── presentation/
 │   ├── screens/        # Main UI screens (Translator, TTS Player, Onboarding)
 │   └── widgets/        # Reusable UI components
