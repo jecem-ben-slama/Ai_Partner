@@ -6,7 +6,6 @@
 
 <div align="center">
 
-  <!-- REPLACE THESE WITH ACTUAL GITHUB HOSTED IMAGES/GIFS -->
 
   <img src="assets/demo/text-extraction.gif" width="220" alt="Text Extraction Demo">
 
@@ -25,7 +24,7 @@ This project was built not just to solve a problem, but as a deliberate sandbox 
 * **BLoC/Cubit vs. Simpler State Management:**
     * *The Decision:* I intentionally chose BLoC/Cubit to manage the state.
     * *The Trade-off:* For a relatively straightforward feature set, this introduced significant boilerplate. However, it completely decoupled the UI from the business logic, making the state highly predictable and the translation services significantly easier to mock and test.
-* **Strict Clean Architecture (Domain/Data/Presentation):**
+* **Strict Clean Architecture:**
     * *The Decision:* I separated all third-party SDKs (Google ML Kit, Flutter TTS) behind custom service abstractions and repositories.
     * *The Trade-off:* It increased initial development time, but it ensures that if Google ML Kit is deprecated tomorrow, the UI and logic layers remain entirely untouched when swapping the data source.
 * **On-Device ML vs. Cloud API:**
