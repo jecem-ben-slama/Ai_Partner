@@ -62,7 +62,7 @@ This project was built not just to solve a problem, but as a deliberate sandbox 
 * **State Management:** [flutter_bloc](https://pub.dev/packages/flutter_bloc)
 * **Machine Learning:** [Google ML Kit](https://developers.google.com/ml-kit)
 * **Hardware APIs:** Flutter TTS & Vibration
-* **Patterns:** Dependency Injection (via `MultiRepositoryProvider`), Repository Pattern, Service Layer Abstraction.
+* **Patterns:** Dependency Injection, Repository Pattern, Service Layer Abstraction.
 
 ---
 
